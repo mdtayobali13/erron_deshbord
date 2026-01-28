@@ -3,6 +3,9 @@
 # ----------------------------
 FROM ghcr.io/cirruslabs/flutter:latest AS build
 
+# Suppress the "running as root" warning
+ENV PUB_CACHE=/app/.pub-cache
+
 WORKDIR /app
 
 # Copy pubspec files first (better caching)
@@ -22,6 +25,9 @@ FROM nginx:alpine
 
 # Copy built web app
 COPY --from=build /app/build/web /usr/share/nginx/html
+
+# Copy custom nginx config for SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
