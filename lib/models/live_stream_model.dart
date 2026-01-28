@@ -28,5 +28,10 @@ class LiveStream {
     required this.streamId,
     this.rawId,
     this.views = 0,
+    this.livekitToken,
+    this.hostIdentity,
   }) : shadyPercentage = 100 - legitPercentage;
+
+  final String? livekitToken;
+  final String? hostIdentity;
 }

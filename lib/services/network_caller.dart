@@ -193,6 +193,14 @@ class NetworkCaller {
   static Future<NetworkResponse> getRequest(String url) async {
     try {
       final token = await PrefsService.getToken();
+
+      print('🚀 [GET] URL: $url');
+      if (token != null) {
+        print('🔑 Token: ${token.substring(0, 10)}...');
+      } else {
+        print('🔑 Token: MISSING');
+      }
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -200,6 +208,9 @@ class NetworkCaller {
           if (token != null) 'Authorization': 'Bearer $token',
         },
       );
+
+      print('✅ Status: ${response.statusCode}');
+      print('📦 Response: ${response.body}');
 
       dynamic decodedData;
       try {
@@ -222,6 +233,7 @@ class NetworkCaller {
         );
       }
     } catch (e) {
+      print('❌ [GET] Error: $e');
       return NetworkResponse(
         isSuccess: false,
         statusCode: -1,

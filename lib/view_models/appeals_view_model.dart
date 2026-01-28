@@ -1,63 +1,18 @@
 import 'package:flutter/material.dart';
 import '../models/appeal_model.dart';
+import '../services/network_caller.dart';
 
 class AppealsViewModel extends ChangeNotifier {
-  final List<Appeal> _appeals = [
-    Appeal(
-      id: "1",
-      userName: "Dianne Russell",
-      userAvatar: "https://i.pravatar.cc/150?u=dianne",
-      timeAgo: "2 hours ago",
-      originalReason: "Nudity in stream",
-      appealMessage:
-          "I sincerely apologize for my actions. It was a mistake and I was not aware that my clothing violated the community guidelines. I have reviewed the rules thoroughly and promise to follow them strictly going forward. Please give me another chance to be part of this community.",
-      status: "Pending",
-    ),
-    Appeal(
-      id: "2",
-      userName: "Dianne Russell",
-      userAvatar: "https://i.pravatar.cc/150?u=dianne",
-      timeAgo: "2 hours ago",
-      originalReason: "Harassment of other users",
-      appealMessage:
-          "I deeply regret my behavior towards other community members. I was going through a difficult time, but that is no excuse. I have taken time to reflect on my actions and understand the harm I caused. I would be grateful for the opportunity to make amends and contribute positively to the platform.",
-      status: "Pending",
-    ),
-    Appeal(
-      id: "3",
-      userName: "Dianne Russell",
-      userAvatar: "https://i.pravatar.cc/150?u=dianne",
-      timeAgo: "2 hours ago",
-      originalReason: "Scam attempt",
-      appealMessage:
-          "I understand why I was banned and I take full responsibility. What I did was wrong and violated the trust of the community. I have learned my lesson and would never attempt anything like that again. I miss being part of this platform and hope you can find it in your hearts to give me one more chance.",
-      status: "Pending",
-    ),
-    Appeal(
-      id: "4",
-      userName: "Guy Hawkins",
-      userAvatar: "https://i.pravatar.cc/150?u=guy",
-      timeAgo: "5 hours ago",
-      originalReason: "Spamming",
-      appealMessage:
-          "I was just trying to share some interesting links with my friends. I didn't realize it would be considered spam. I'll be more careful next time.",
-      status: "Pending",
-    ),
-    Appeal(
-      id: "5",
-      userName: "Eleanor Pena",
-      userAvatar: "https://i.pravatar.cc/150?u=eleanor",
-      timeAgo: "1 day ago",
-      originalReason: "Inappropriate language",
-      appealMessage:
-          "I'm sorry for the words I used. I was frustrated and lost my cool. It won't happen again.",
-      status: "Pending",
-    ),
-  ];
+  List<Appeal> _appeals = [];
+  bool _isLoading = false;
+  String? _errorMessage;
 
   int _currentPage = 1;
   final int _itemsPerPage = 3;
 
+  List<Appeal> get appeals => _appeals;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
   int get currentPage => _currentPage;
 
   List<Appeal> get displayedAppeals {
@@ -70,7 +25,73 @@ class AppealsViewModel extends ChangeNotifier {
     );
   }
 
-  int get totalPages => (_appeals.length / _itemsPerPage).ceil();
+  int get totalPages =>
+      _appeals.isEmpty ? 1 : (_appeals.length / _itemsPerPage).ceil();
+
+  AppealsViewModel() {
+    fetchAppeals();
+  }
+
+  Future<void> fetchAppeals() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      print('📞 Fetching appeals from API...');
+      final response = await NetworkCaller.getRequest(
+        'https://erronliveapp.mtscorporate.com/api/v1/apologies/',
+      );
+
+      print('📊 Response Status: ${response.statusCode}');
+      print('📊 Response Success: ${response.isSuccess}');
+
+      if (response.isSuccess) {
+        final data = response.responseData;
+
+        print('📊 Response Data Type: ${data.runtimeType}');
+        print('📊 Response Data: $data');
+
+        // Handle both single object and array responses
+        if (data is Map<String, dynamic>) {
+          // API returns a single object
+          _appeals = [Appeal.fromJson(data)];
+          print('✅ Fetched 1 appeal from API');
+        } else if (data is List) {
+          _appeals = data.map((json) => Appeal.fromJson(json)).toList();
+          print('✅ Fetched ${_appeals.length} appeals from array');
+        } else {
+          _appeals = [];
+          print('⚠️ Unexpected data format: ${data.runtimeType}');
+        }
+      } else {
+        // If the endpoint doesn't exist or returns an error, just show empty state
+        // This is not a critical error - the feature might not be implemented yet
+        _appeals = [];
+        if (response.statusCode == 404) {
+          print('ℹ️ Appeals endpoint not found (404) - showing empty state');
+        } else if (response.statusCode == 401) {
+          _errorMessage = 'Unauthorized - Please login again';
+          print('❌ Unauthorized access to appeals');
+        } else {
+          _errorMessage =
+              response.errorMessage ??
+              'Failed to fetch appeals (Status: ${response.statusCode})';
+          print('❌ Error fetching appeals: $_errorMessage');
+          print('❌ Response data: ${response.responseData}');
+        }
+      }
+    } catch (e, stackTrace) {
+      // Don't show error to user if it's just a network issue
+      // Just show empty state
+      _appeals = [];
+      print('❌ Exception fetching appeals: $e');
+      print('❌ Stack trace: $stackTrace');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   void setPage(int page) {
     _currentPage = page;
@@ -88,6 +109,36 @@ class AppealsViewModel extends ChangeNotifier {
     if (_currentPage > 1) {
       _currentPage--;
       notifyListeners();
+    }
+  }
+
+  Future<bool> reviewAppeal(String appealId, String action) async {
+    try {
+      print('📝 Reviewing appeal $appealId with action: $action');
+
+      final response = await NetworkCaller.patchRequest(
+        'https://erronliveapp.mtscorporate.com/api/v1/apologies/$appealId/review',
+        body: {
+          'action': action, // APOLOGY_ACCEPTED or APOLOGY_REJECTED
+        },
+      );
+
+      print('📊 Review Response Status: ${response.statusCode}');
+      print('📊 Review Response Success: ${response.isSuccess}');
+
+      if (response.isSuccess) {
+        print('✅ Appeal reviewed successfully');
+        // Refresh the appeals list
+        await fetchAppeals();
+        return true;
+      } else {
+        print('❌ Failed to review appeal: ${response.statusCode}');
+        print('❌ Response: ${response.responseData}');
+        return false;
+      }
+    } catch (e) {
+      print('❌ Exception reviewing appeal: $e');
+      return false;
     }
   }
 }

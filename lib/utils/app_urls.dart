@@ -9,7 +9,10 @@ class AppUrls {
   static const String pendingKyc = "$base/users/kyc/stats/pending";
   static const String activeStreamsList = "$base/streaming/all/streams";
   static const String resumeStream = "$base/streaming/resume";
+  static const String freezeStream = "$base/streaming/freeze";
   static const String stopStream = "$base/streaming/stop";
+  static const String liveKitBaseUrl =
+      "https://liveworld-l78cuzu0.livekit.cloud";
   static const String reports = "$base/streaming/interactions/report";
   static const String updateUserStatus =
       "$authBase/moderator/update-user-status";

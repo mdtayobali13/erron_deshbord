@@ -19,9 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
-    // Artificial delay for splash effect
-    await Future.delayed(const Duration(seconds: 2));
-
+    // Check login status immediately without delay
     final isLoggedIn = await PrefsService.isLoggedIn();
 
     if (mounted) {

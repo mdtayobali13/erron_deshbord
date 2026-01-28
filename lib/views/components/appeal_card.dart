@@ -103,7 +103,7 @@ class AppealCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  appeal.status,
+                  appeal.status ?? 'PENDING',
                   style: GoogleFonts.outfit(
                     color: Colors.orange,
                     fontSize: 10,

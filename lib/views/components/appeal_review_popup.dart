@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../models/appeal_model.dart';
+import '../../view_models/appeals_view_model.dart';
 import '../../utils/toast_helper.dart';
 
 class AppealReviewPopup extends StatelessWidget {
@@ -165,68 +167,123 @@ class AppealReviewPopup extends StatelessWidget {
           const SizedBox(height: 40),
 
           // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    ToastHelper.error(
-                      context,
-                      title: "Appeal Rejected",
-                      message: "The user's ban will remain in effect",
-                    );
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Reject Appeal (Ban Remains)",
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+          Consumer<AppealsViewModel>(
+            builder: (context, viewModel, child) => Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (appeal.id == null) {
+                        ToastHelper.error(
+                          context,
+                          title: "Error",
+                          message: "Invalid appeal ID",
+                        );
+                        return;
+                      }
+
+                      // Call API to dismiss appeal
+                      final success = await viewModel.reviewAppeal(
+                        appeal.id!,
+                        'DISMISS',
+                      );
+
+                      if (context.mounted) {
+                        if (success) {
+                          ToastHelper.error(
+                            context,
+                            title: "Appeal Dismissed",
+                            message: "The appeal has been dismissed",
+                          );
+                          Navigator.pop(context);
+                        } else {
+                          ToastHelper.error(
+                            context,
+                            title: "Error",
+                            message:
+                                "Failed to dismiss appeal. Please try again.",
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFEF4444),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Dismiss Appeal",
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    ToastHelper.success(
-                      context,
-                      title: "Ban Lifted",
-                      message: "User access has been successfully restored",
-                    );
-                    Navigator.pop(context);
-                  },
-                  child: Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Lift Ban (Restore Access)",
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (appeal.id == null) {
+                        ToastHelper.error(
+                          context,
+                          title: "Error",
+                          message: "Invalid appeal ID",
+                        );
+                        return;
+                      }
+
+                      // Call API to accept appeal
+                      final success = await viewModel.reviewAppeal(
+                        appeal.id!,
+                        'APOLOGY_ACCEPTED',
+                      );
+
+                      if (context.mounted) {
+                        if (success) {
+                          ToastHelper.success(
+                            context,
+                            title: "Ban Lifted",
+                            message:
+                                "User access has been successfully restored",
+                          );
+                          Navigator.pop(context);
+                        } else {
+                          ToastHelper.error(
+                            context,
+                            title: "Error",
+                            message:
+                                "Failed to accept appeal. Please try again.",
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Lift Ban (Restore Access)",
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

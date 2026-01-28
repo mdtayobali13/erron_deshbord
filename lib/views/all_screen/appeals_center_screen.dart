@@ -32,10 +32,48 @@ class AppealsCenterScreen extends StatelessWidget {
           ),
           const SizedBox(height: 30),
 
-          // Appeals List
-          ...viewModel.displayedAppeals
-              .map((appeal) => AppealCard(appeal: appeal))
-              .toList(),
+          // Loading Indicator
+          if (viewModel.isLoading)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+              ),
+            )
+          else if (viewModel.displayedAppeals.isEmpty)
+            // Empty State
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(40),
+                child: Column(
+                  children: [
+                    Icon(Icons.inbox_outlined, size: 64, color: Colors.white24),
+                    const SizedBox(height: 16),
+                    Text(
+                      "No appeals found",
+                      style: GoogleFonts.outfit(
+                        color: Colors.white38,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "All appeal requests will appear here",
+                      style: GoogleFonts.outfit(
+                        color: Colors.white24,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            // Appeals List
+            ...viewModel.displayedAppeals
+                .map((appeal) => AppealCard(appeal: appeal))
+                .toList(),
 
           const SizedBox(height: 20),
 

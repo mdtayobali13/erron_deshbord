@@ -121,37 +121,36 @@ class LiveMonitorViewModel extends ChangeNotifier {
   }
 
   Future<bool> toggleFreezeStream(String streamId) async {
-    final String url = AppUrls.resumeStream;
-
     final index = _liveStreams.indexWhere((s) => s.rawId == streamId);
-    if (index != -1) {
-      final currentStream = _liveStreams[index];
-      final bool targetState = !currentStream.isFrozen;
-
-      // 1. Instantly Lock the state to prevent timer rollback
-      _manualFrozenLock[streamId] = targetState;
-
-      // 2. Update local UI state
-      _liveStreams[index] = LiveStream(
-        userName: currentStream.userName,
-        userAvatar: currentStream.userAvatar,
-        streamTitle: currentStream.streamTitle,
-        description: currentStream.description,
-        thumbnail: currentStream.thumbnail,
-        legitPercentage: currentStream.legitPercentage,
-        streamId: currentStream.streamId,
-        rawId: currentStream.rawId,
-        isFree: currentStream.isFree,
-        isFrozen: targetState,
-        isLive: currentStream.isLive,
-        is4k: currentStream.is4k,
-      );
-      notifyListeners();
+    if (index == -1) {
+      return false;
     }
+
+    final currentStream = _liveStreams[index];
+    final bool targetState = !currentStream.isFrozen;
+    final String url = targetState
+        ? AppUrls.freezeStream
+        : AppUrls.resumeStream;
+    _manualFrozenLock[streamId] = targetState;
+    _liveStreams[index] = LiveStream(
+      userName: currentStream.userName,
+      userAvatar: currentStream.userAvatar,
+      streamTitle: currentStream.streamTitle,
+      description: currentStream.description,
+      thumbnail: currentStream.thumbnail,
+      legitPercentage: currentStream.legitPercentage,
+      streamId: currentStream.streamId,
+      rawId: currentStream.rawId,
+      isFree: currentStream.isFree,
+      isFrozen: targetState,
+      isLive: currentStream.isLive,
+      is4k: currentStream.is4k,
+    );
+    notifyListeners();
 
     final String finalUrl = "$url/$streamId";
     debugPrint("Final Resume/Freeze URL: $finalUrl");
-    
+
     final response = await NetworkCaller.putRequest(finalUrl);
     debugPrint(
       "Final Resume/Freeze Response: ${response.statusCode} - ${response.responseData} - ${response.errorMessage}",
@@ -175,7 +174,7 @@ class LiveMonitorViewModel extends ChangeNotifier {
     debugPrint("URL: ${AppUrls.stopStream}/$streamId");
     final response = await NetworkCaller.postRequest(
       "${AppUrls.stopStream}/$streamId",
-      body: {}, 
+      body: {},
     );
 
     debugPrint(
