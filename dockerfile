@@ -1,21 +1,18 @@
 # ----------------------------
 # Build stage
 # ----------------------------
-FROM flutter:3.22.0 AS build
+FROM ghcr.io/cirruslabs/flutter:3.22.0 AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy pubspec files
+# Copy pubspec files first (better caching)
 COPY pubspec.yaml pubspec.lock ./
-
-# Get dependencies
 RUN flutter pub get
 
 # Copy rest of the app
 COPY . .
 
-# Build web release
+# Build Flutter web
 RUN flutter build web --release
 
 # ----------------------------
@@ -23,11 +20,9 @@ RUN flutter build web --release
 # ----------------------------
 FROM nginx:alpine
 
-# Copy built web app from build stage
+# Copy built web app
 COPY --from=build /app/build/web /usr/share/nginx/html
 
-# Expose port 80
 EXPOSE 80
 
-# Run nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]
