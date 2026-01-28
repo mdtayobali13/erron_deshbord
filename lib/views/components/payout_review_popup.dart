@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../models/payout_model.dart';
+import '../../view_models/finance_view_model.dart';
+import '../../utils/toast_helper.dart';
 
 class PayoutReviewPopup extends StatelessWidget {
   final PayoutRequest request;
@@ -193,54 +196,128 @@ class PayoutReviewPopup extends StatelessWidget {
           const SizedBox(height: 32),
 
           // Action Buttons
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Decline",
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+          Consumer<FinanceViewModel>(
+            builder: (context, viewModel, child) {
+              return Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: viewModel.isLoading
+                          ? null
+                          : () async {
+                              if (request.id != null) {
+                                final success = await viewModel
+                                    .updatePayoutStatus(request.id!, "decline");
+                                if (context.mounted) {
+                                  if (success) {
+                                    ToastHelper.success(
+                                      context,
+                                      title: "Declined",
+                                      message:
+                                          "Payout request has been declined.",
+                                    );
+                                    Navigator.pop(context);
+                                  } else {
+                                    ToastHelper.error(
+                                      context,
+                                      title: "Error",
+                                      message:
+                                          viewModel.errorMessage ??
+                                          "Failed to decline payout",
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                      child: Container(
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Center(
+                          child: viewModel.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  "Decline",
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Center(
-                      child: Text(
-                        "Approve Transfer",
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: viewModel.isLoading
+                          ? null
+                          : () async {
+                              if (request.id != null) {
+                                final success = await viewModel
+                                    .updatePayoutStatus(request.id!, "approve");
+                                if (context.mounted) {
+                                  if (success) {
+                                    ToastHelper.success(
+                                      context,
+                                      title: "Approved",
+                                      message:
+                                          "Payout request approved and tokens deducted.",
+                                    );
+                                    Navigator.pop(context);
+                                  } else {
+                                    ToastHelper.error(
+                                      context,
+                                      title: "Error",
+                                      message:
+                                          viewModel.errorMessage ??
+                                          "Failed to approve payout",
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                      child: Container(
+                        height: 52,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        child: Center(
+                          child: viewModel.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  "Approve Transfer",
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
         ],
       ),

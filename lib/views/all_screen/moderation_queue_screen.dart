@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
-import '../../models/moderation_ticket_model.dart';
+import '../../utils/toast_helper.dart';
+import '../../models/report_model.dart';
 import '../../view_models/moderation_view_model.dart';
 
 class ModerationQueueScreen extends StatefulWidget {
@@ -23,6 +24,12 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (viewModel.isLoading)
+            const LinearProgressIndicator(
+              color: AppColors.primary,
+              backgroundColor: Colors.transparent,
+            ),
+          const SizedBox(height: 10),
           // Header
           Text(
             "Moderation Queue",
@@ -173,11 +180,25 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
                       ),
                       child: Row(
                         children: [
-                          _buildDataCell(ticket.ticketId, flex: 2),
-                          _buildDataCell(ticket.reporter, flex: 2),
-                          _buildDataCell(ticket.target, flex: 2),
-                          _buildDataCell(ticket.category, flex: 2),
-                          _buildDataCell(ticket.time, flex: 2),
+                          _buildDataCell(
+                            ticket.id?.substring(0, 8) ?? "N/A",
+                            flex: 2,
+                          ),
+                          _buildDataCell(
+                            "${ticket.reporterUser?.firstName ?? ""} ${ticket.reporterUser?.lastName ?? ""}",
+                            flex: 2,
+                          ),
+                          _buildDataCell(
+                            "${ticket.session?.host?.firstName ?? ""} ${ticket.session?.host?.lastName ?? ""}",
+                            flex: 2,
+                          ),
+                          _buildDataCell(ticket.category ?? "General", flex: 2),
+                          _buildDataCell(
+                            ticket.createdAt != null
+                                ? "${DateTime.now().difference(DateTime.parse(ticket.createdAt!)).inMinutes} min ago"
+                                : "N/A",
+                            flex: 2,
+                          ),
                           Expanded(
                             flex: 1,
                             child: Align(
@@ -366,7 +387,7 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
     );
   }
 
-  void _showReviewPopup(BuildContext context, ModerationTicket ticket) {
+  void _showReviewPopup(BuildContext context, ReportModel ticket) {
     showDialog(
       context: context,
       barrierColor: Colors.black.withOpacity(0.85),
@@ -376,7 +397,7 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
 }
 
 class _ReviewTicketPopup extends StatelessWidget {
-  final ModerationTicket ticket;
+  final ReportModel ticket;
 
   const _ReviewTicketPopup({required this.ticket});
 
@@ -404,7 +425,7 @@ class _ReviewTicketPopup extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Sarah Jenkins", // Mock name from image
+                      "${ticket.session?.host?.firstName ?? ""} ${ticket.session?.host?.lastName ?? ""}",
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 24,
@@ -412,7 +433,7 @@ class _ReviewTicketPopup extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      "Sarah Streaming music live",
+                      ticket.session?.title ?? "Live Streaming",
                       style: GoogleFonts.outfit(
                         color: Colors.white60,
                         fontSize: 14,
@@ -451,17 +472,28 @@ class _ReviewTicketPopup extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      _buildDetailRow("Reporter", ticket.reporter),
+                      _buildDetailRow(
+                        "Reporter",
+                        "${ticket.reporterUser?.firstName ?? ""} ${ticket.reporterUser?.lastName ?? ""}",
+                      ),
                       const SizedBox(width: 40),
-                      _buildDetailRow("Target", ticket.target),
+                      _buildDetailRow(
+                        "Target",
+                        "${ticket.session?.host?.firstName ?? ""} ${ticket.session?.host?.lastName ?? ""}",
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
                   Row(
                     children: [
-                      _buildDetailRow("Category", ticket.category),
+                      _buildDetailRow("Category", ticket.category ?? "General"),
                       const SizedBox(width: 40),
-                      _buildDetailRow("Reported", ticket.time),
+                      _buildDetailRow(
+                        "Reported",
+                        ticket.createdAt != null
+                            ? "${DateTime.now().difference(DateTime.parse(ticket.createdAt!)).inMinutes} min ago"
+                            : "N/A",
+                      ),
                     ],
                   ),
                   const SizedBox(height: 32),
@@ -477,10 +509,31 @@ class _ReviewTicketPopup extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: Image.network(
-                      "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
+                      ticket.session?.thumbnail ??
+                          "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?ixlib=rb-1.2.1&auto=format&fit=crop&w=1200&q=80",
                       height: 300,
                       width: double.infinity,
                       fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 300,
+                        width: double.infinity,
+                        color: Colors.white.withOpacity(0.05),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.broken_image_outlined,
+                              color: Colors.white24,
+                              size: 48,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              "Evidence image not available",
+                              style: GoogleFonts.outfit(color: Colors.white24),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -516,14 +569,46 @@ class _ReviewTicketPopup extends StatelessWidget {
             const SizedBox(height: 32),
 
             // Actions
-            Row(
-              children: [
-                _buildActionBtn("Dismiss", const Color(0xFF1F2937), () {}),
-                const SizedBox(width: 12),
-                _buildActionBtn("Warn User", const Color(0xFFEAB308), () {}),
-                const SizedBox(width: 12),
-                _buildActionBtn("Ban User", const Color(0xFFEF4444), () {}),
-              ],
+            Consumer<ModerationViewModel>(
+              builder: (context, viewModel, child) => Row(
+                children: [
+                  _buildActionBtn("Dismiss", const Color(0xFF1F2937), () {
+                    ToastHelper.success(
+                      context,
+                      title: "Report Dismissed",
+                      message: "The report has been resolved without action",
+                    );
+                    Navigator.pop(context);
+                  }),
+                  const SizedBox(width: 12),
+                  _buildActionBtn("Ban User", const Color(0xFFEF4444), () async {
+                    if (ticket.session?.host?.id == null) return;
+                    // Passing "ACTIVE" as current status will force the toggle to set it to "INACTIVE"
+                    final success = await viewModel.toggleUserStatus(
+                      ticket.session!.host!.id!,
+                      "ACTIVE",
+                    );
+                    if (context.mounted) {
+                      if (success) {
+                        ToastHelper.success(
+                          context,
+                          title: "Success",
+                          message: "User account deactivated",
+                        );
+                        Navigator.pop(context);
+                      } else {
+                        ToastHelper.error(
+                          context,
+                          title: "Error",
+                          message:
+                              viewModel.errorMessage ??
+                              "Failed to deactivate account",
+                        );
+                      }
+                    }
+                  }),
+                ],
+              ),
             ),
           ],
         ),

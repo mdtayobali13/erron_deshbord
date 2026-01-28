@@ -1,96 +1,49 @@
 import 'package:flutter/material.dart';
 import '../models/moderator_model.dart';
+import '../services/network_caller.dart';
+import '../utils/app_urls.dart';
 
 class ModeratorViewModel extends ChangeNotifier {
-  final List<Moderator> _moderators = [
-    Moderator(
-      id: "mod-1",
-      name: "Maria Garcia",
-      username: "moderator1",
-      avatar:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      status: "Inactive",
-      reports: 1089,
-      bans: 89,
-      appeals: 156,
-      accuracy: 96,
-      joinedDate: "Feb 3, 2023",
-    ),
-    Moderator(
-      id: "mod-2",
-      name: "Dianne Russell",
-      username: "moderator2",
-      avatar:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      status: "Inactive",
-      reports: 1089,
-      bans: 89,
-      appeals: 156,
-      accuracy: 96,
-      joinedDate: "Feb 3, 2023",
-    ),
-    Moderator(
-      id: "mod-3",
-      name: "Floyd Miles",
-      username: "moderator3",
-      avatar:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      status: "Inactive",
-      reports: 1089,
-      bans: 89,
-      appeals: 156,
-      accuracy: 96,
-      joinedDate: "Feb 3, 2023",
-    ),
-    Moderator(
-      id: "mod-4",
-      name: "Kathryn Murphy",
-      username: "moderator4",
-      avatar:
-          "https://images.unsplash.com/photo-1517841905240-472988bad1fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      status: "Inactive",
-      reports: 1089,
-      bans: 89,
-      appeals: 156,
-      accuracy: 96,
-      joinedDate: "Feb 3, 2023",
-    ),
-    Moderator(
-      id: "mod-5",
-      name: "Brooklyn Simmons",
-      username: "moderator4",
-      avatar:
-          "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      status: "Inactive",
-      reports: 1089,
-      bans: 89,
-      appeals: 156,
-      accuracy: 96,
-      joinedDate: "Feb 3, 2023",
-    ),
-    Moderator(
-      id: "mod-6",
-      name: "Ronald Richards",
-      username: "moderator6",
-      avatar:
-          "https://images.unsplash.com/photo-1521119956491-c7ef7368d581?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-      status: "Inactive",
-      reports: 1089,
-      bans: 89,
-      appeals: 156,
-      accuracy: 96,
-      joinedDate: "Feb 3, 2023",
-    ),
-  ];
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
 
-  int _currentPage = 1;
-  final int _itemsPerPage = 6;
+  String? _errorMessage;
+  String? get errorMessage => _errorMessage;
 
+  List<Moderator> _moderators = [];
   List<Moderator> get moderators => _moderators;
 
   String _searchQuery = "";
   String get searchQuery => _searchQuery;
+
+  int _currentPage = 1;
   int get currentPage => _currentPage;
+  final int _itemsPerPage = 6;
+
+  ModeratorViewModel() {
+    loadModerators();
+  }
+
+  Future<void> loadModerators() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    final response = await NetworkCaller.getRequest(
+      "${AppUrls.moderatorsList}?skip=0&limit=100",
+    );
+
+    if (response.isSuccess && response.responseData != null) {
+      final List<dynamic> data = response.responseData;
+      _moderators = data.map((json) => Moderator.fromJson(json)).toList();
+    } else {
+      _moderators = [];
+      _errorMessage = response.errorMessage ?? "Failed to load moderators";
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
 
   void updateSearch(String query) {
     _searchQuery = query;
@@ -100,13 +53,12 @@ class ModeratorViewModel extends ChangeNotifier {
 
   List<Moderator> get filteredModerators {
     if (_searchQuery.isEmpty) return _moderators;
-    return _moderators
-        .where(
-          (m) =>
-              m.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              m.username.toLowerCase().contains(_searchQuery.toLowerCase()),
-        )
-        .toList();
+    final query = _searchQuery.toLowerCase();
+    return _moderators.where((m) {
+      final matchesName = (m.fullName ?? "").toLowerCase().contains(query);
+      final matchesUsername = (m.username ?? "").toLowerCase().contains(query);
+      return matchesName || matchesUsername;
+    }).toList();
   }
 
   List<Moderator> get displayedModerators {
@@ -145,11 +97,77 @@ class ModeratorViewModel extends ChangeNotifier {
     }
   }
 
-  void deleteModerator(String id) {
+  Future<bool> createModerator(Map<String, dynamic> moderatorData) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await NetworkCaller.postRequest(
+        AppUrls.createModerator,
+        body: moderatorData,
+      );
+
+      if (response.isSuccess) {
+        await loadModerators(); // Refresh list
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = response.errorMessage ?? "Failed to create moderator";
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateModerator(
+    String id,
+    Map<String, dynamic> moderatorData,
+  ) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await NetworkCaller.patchRequest(
+        "${AppUrls.updateModerator}/$id",
+        body: moderatorData,
+      );
+
+      if (response.isSuccess) {
+        await loadModerators(); // Refresh list
+        _isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        _errorMessage = response.errorMessage ?? "Failed to update moderator";
+        _isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> deleteModerator(String id) async {
+    // Implement delete logic when API is available
+    // For now, local removal
     _moderators.removeWhere((m) => m.id == id);
     if (displayedModerators.isEmpty && _currentPage > 1) {
       _currentPage--;
     }
     notifyListeners();
+    return true;
   }
 }

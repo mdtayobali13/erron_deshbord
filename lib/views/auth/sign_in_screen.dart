@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../views/main_layout.dart';
 import '../../view_models/auth_view_model.dart';
+import '../../utils/toast_helper.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -124,14 +125,14 @@ class _SignInScreenState extends State<SignInScreen> {
             border: Border.all(color: AppColors.primary.withOpacity(0.2)),
           ),
           child: const Icon(
-            Icons.auto_awesome, // AI Icon
+            Icons.dashboard_rounded,
             size: 48,
             color: AppColors.primary,
           ),
         ),
         const SizedBox(height: 24),
         Text(
-          'Eron Intelligence',
+          'Eron Global',
           style: GoogleFonts.outfit(
             fontSize: 32,
             fontWeight: FontWeight.bold,
@@ -141,7 +142,7 @@ class _SignInScreenState extends State<SignInScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Sign in to manage your AI workforce',
+          'Sign in to your administration dashboard',
           style: GoogleFonts.inter(
             fontSize: 16,
             color: AppColors.textSecondary,
@@ -275,17 +276,37 @@ class _SignInScreenState extends State<SignInScreen> {
             ? null
             : () async {
                 if (_formKey.currentState!.validate()) {
-                  await viewModel.signIn(
+                  final success = await viewModel.signIn(
                     _usernameController.text,
                     _passwordController.text,
                   );
                   if (mounted) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const MainLayout(),
-                      ),
-                    );
+                    if (success) {
+                      ToastHelper.success(
+                        context,
+                        title: "Login Success",
+                        message: "Welcome back to Eron Dashboard",
+                      );
+
+                      Future.delayed(const Duration(seconds: 1), () {
+                        if (mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MainLayout(),
+                            ),
+                          );
+                        }
+                      });
+                    } else {
+                      ToastHelper.error(
+                        context,
+                        title: "Login Failed",
+                        message:
+                            viewModel.loginResponse?.message ??
+                            "Please check your email and password",
+                      );
+                    }
                   }
                 }
               },
@@ -319,7 +340,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Widget _buildPoweredBy() {
     return Text(
-      'POWERED BY ERON NEURAL ENGINE v2.4',
+      'POWERED BY ERON ENGINE v2.4',
       style: GoogleFonts.outfit(
         fontSize: 10,
         fontWeight: FontWeight.w800,

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../view_models/live_monitor_view_model.dart';
 import '../../../utils/app_colors.dart';
+import '../../../utils/toast_helper.dart';
 import '../components/live_stream_card.dart';
 
 class LiveMonitorScreen extends StatefulWidget {
@@ -119,7 +120,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          "Active ${viewModel.liveStreams.length} Streams",
+                          "Active ${viewModel.streamStats?.total ?? 0} Streams",
                           style: GoogleFonts.outfit(
                             color: Colors.white70,
                             fontSize: 13,
@@ -134,7 +135,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen> {
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          "3,999 Total Viewers",
+                          "${viewModel.totalViewers.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} Total Viewers",
                           style: GoogleFonts.outfit(
                             color: Colors.white70,
                             fontSize: 13,
@@ -142,6 +143,8 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen> {
                           ),
                         ),
 
+                        const SizedBox(width: 24),
+                    
                         const Spacer(),
 
                         // Right Filters
@@ -304,7 +307,18 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen> {
   Widget _buildGlassyFilterBtn(String label, {IconData? icon}) {
     final isSelected = _selectedFilter == label;
     return GestureDetector(
-      onTap: () => setState(() => _selectedFilter = label),
+      onTap: () {
+        if (label == "Refresh") {
+          context.read<LiveMonitorViewModel>().loadData();
+          ToastHelper.success(
+            context,
+            title: "Refreshing",
+            message: "Live streams data is being refreshed...",
+          );
+        } else {
+          setState(() => _selectedFilter = label);
+        }
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(

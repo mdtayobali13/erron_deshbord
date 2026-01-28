@@ -12,7 +12,7 @@ class ModeratorCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF11141D), // Deep dark grey/black
         borderRadius: BorderRadius.circular(28),
@@ -27,16 +27,18 @@ class ModeratorCard extends StatelessWidget {
               Stack(
                 children: [
                   Container(
-                    width: 60,
-                    height: 60,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: const Color(0xFFD946EF), // Magenta border
-                        width: 2,
+                        width: 1.5,
                       ),
                       image: DecorationImage(
-                        image: NetworkImage(moderator.avatar),
+                        image: NetworkImage(
+                          "https://ui-avatars.com/api/?name=${moderator.fullName ?? "Mod"}&background=random",
+                        ),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -48,7 +50,9 @@ class ModeratorCard extends StatelessWidget {
                       width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF10B981), // Green status dot
+                        color: moderator.isActive == true
+                            ? const Color(0xFF10B981)
+                            : Colors.grey, // Green status dot
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: const Color(0xFF11141D),
@@ -70,11 +74,11 @@ class ModeratorCard extends StatelessWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            moderator.name,
+                            moderator.fullName ?? "No Name",
                             overflow: TextOverflow.ellipsis,
                             style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: 20,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -90,9 +94,13 @@ class ModeratorCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            moderator.status,
+                            moderator.isActive == true ? "Active" : "Inactive",
                             style: GoogleFonts.outfit(
-                              color: const Color(0xFF10B981).withOpacity(0.6),
+                              color:
+                                  (moderator.isActive == true
+                                          ? const Color(0xFF10B981)
+                                          : Colors.red)
+                                      .withOpacity(0.6),
                               fontSize: 9,
                               fontWeight: FontWeight.w600,
                             ),
@@ -101,7 +109,7 @@ class ModeratorCard extends StatelessWidget {
                       ],
                     ),
                     Text(
-                      moderator.username,
+                      moderator.username ?? "moderator",
                       style: GoogleFonts.outfit(
                         color: Colors.white.withOpacity(0.4),
                         fontSize: 14,
@@ -174,41 +182,49 @@ class ModeratorCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 10),
           // Stats Row
           Row(
             children: [
               Expanded(
-                child: _buildStatItem(moderator.reports.toString(), "Reports"),
+                child: _buildStatItem(
+                  moderator.reportedCount?.toString() ?? "0",
+                  "Reports",
+                ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildStatItem(moderator.bans.toString(), "Bans"),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _buildStatItem(moderator.appeals.toString(), "Appeals"),
-              ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildStatItem(
-                  "${moderator.accuracy}%",
-                  "Accuracy",
-                  isGreen: true,
+                  moderator.suspendedCount?.toString() ?? "0",
+                  "Bans",
                 ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatItem(
+                  moderator.appealCount?.toString() ?? "0",
+                  "Appeals",
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatItem("100%", "Accuracy", isGreen: true),
               ),
             ],
           ),
-          const SizedBox(height: 18),
+          const SizedBox(height: 10),
           // Footer
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               _buildFooterItem(
                 Icons.calendar_today_outlined,
-                "Joined ${moderator.joinedDate}",
+                "Joined ${moderator.createdAt?.toString().split(' ')[0] ?? "Unknown"}",
               ),
-              _buildFooterItem(Icons.history, "Joined ${moderator.joinedDate}"),
+              _buildFooterItem(
+                Icons.history,
+                moderator.isActive == true ? "Active" : "Inactive",
+              ),
             ],
           ),
         ],
@@ -226,7 +242,7 @@ class ModeratorCard extends StatelessWidget {
           style: GoogleFonts.outfit(color: Colors.white),
         ),
         content: Text(
-          "Are you sure you want to delete ${moderator.name}?",
+          "Are you sure you want to delete ${moderator.fullName ?? "this moderator"}?",
           style: GoogleFonts.outfit(color: Colors.white70),
         ),
         actions: [
@@ -242,7 +258,7 @@ class ModeratorCard extends StatelessWidget {
               Provider.of<ModeratorViewModel>(
                 context,
                 listen: false,
-              ).deleteModerator(moderator.id);
+              ).deleteModerator(moderator.id ?? "");
               Navigator.pop(context);
             },
             child: Text(
@@ -286,10 +302,10 @@ class ModeratorCard extends StatelessWidget {
 
   Widget _buildStatItem(String value, String label, {bool isGreen = false}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFF1B1E26), // Darker box background
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         children: [
@@ -297,16 +313,15 @@ class ModeratorCard extends StatelessWidget {
             value,
             style: GoogleFonts.outfit(
               color: isGreen ? const Color(0xFF10B981) : Colors.white,
-              fontSize: 20,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
             ),
           ),
-          const SizedBox(height: 2),
           Text(
             label,
             style: GoogleFonts.outfit(
               color: Colors.white.withOpacity(0.4),
-              fontSize: 11,
+              fontSize: 8,
             ),
           ),
         ],

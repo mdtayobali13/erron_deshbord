@@ -8,12 +8,14 @@ class ChartCard extends StatelessWidget {
   final String title;
   final List<SalesData> data;
   final Color baseColor;
+  final Widget? action;
 
   const ChartCard({
     super.key,
     required this.title,
     required this.data,
     required this.baseColor,
+    this.action,
   });
 
   @override
@@ -39,24 +41,25 @@ class ChartCard extends StatelessWidget {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  "Month",
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+              action ??
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      "Month",
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 30),
@@ -114,7 +117,7 @@ class ChartCard extends StatelessWidget {
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 0,
-                maxX: (data.length - 1).toDouble(),
+                maxX: data.isEmpty ? 1 : (data.length - 1).toDouble(),
                 minY: 0,
                 lineBarsData: [
                   LineChartBarData(
@@ -141,6 +144,18 @@ class ChartCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((spot) {
+                        return LineTooltipItem(
+                          '${data[spot.x.toInt()].month}: ${spot.y.toInt()}',
+                          const TextStyle(color: Colors.white),
+                        );
+                      }).toList();
+                    },
+                  ),
+                ),
               ),
             ),
           ),

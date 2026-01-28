@@ -34,7 +34,7 @@ class UserCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               child: Column(
                 children: [
                   // Avatar with Pink Border & Pro Badge
@@ -88,7 +88,7 @@ class UserCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   Text(
                     user.userName,
                     maxLines: 1,
@@ -108,7 +108,7 @@ class UserCard extends StatelessWidget {
                       fontSize: 14, // Slightly smaller
                     ),
                   ),
-                  const SizedBox(height: 16), // Reduced spacing
+                  const SizedBox(height: 12), // Reduced spacing
                   // Trust Score Section
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -205,7 +205,7 @@ class UserCard extends StatelessWidget {
 
                   // Tokens Row
                   _buildInfoRow("Tokens:", user.tokens, isBoldValue: true),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   // KYC Row
                   Row(
@@ -239,7 +239,7 @@ class UserCard extends StatelessWidget {
                     ],
                   ),
                   if (user.isShadowBanned) ...[
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -282,10 +282,10 @@ class UserCard extends StatelessWidget {
   }
 
   Color _getKYCColor(String status) {
-    switch (status) {
-      case "Verified":
+    switch (status.toLowerCase()) {
+      case "verified":
         return const Color(0xFF10B981);
-      case "Rejected":
+      case "rejected":
         return const Color(0xFFEF4444);
       default:
         return const Color(0xFFEAB308);

@@ -12,9 +12,10 @@ import 'view_models/finance_view_model.dart';
 import 'view_models/system_config_view_model.dart';
 import 'view_models/auth_view_model.dart';
 
-import 'views/auth/sign_in_screen.dart';
+import 'views/splash_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
                 displayColor: AppColors.textPrimary,
               ),
         ),
-        home: const SignInScreen(),
+        home: const SplashScreen(),
       ),
     );
   }

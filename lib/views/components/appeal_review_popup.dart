@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../models/appeal_model.dart';
+import '../../utils/toast_helper.dart';
 
 class AppealReviewPopup extends StatelessWidget {
   final Appeal appeal;
@@ -168,7 +169,14 @@ class AppealReviewPopup extends StatelessWidget {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    ToastHelper.error(
+                      context,
+                      title: "Appeal Rejected",
+                      message: "The user's ban will remain in effect",
+                    );
+                    Navigator.pop(context);
+                  },
                   child: Container(
                     height: 52,
                     decoration: BoxDecoration(
@@ -191,7 +199,14 @@ class AppealReviewPopup extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () {
+                    ToastHelper.success(
+                      context,
+                      title: "Ban Lifted",
+                      message: "User access has been successfully restored",
+                    );
+                    Navigator.pop(context);
+                  },
                   child: Container(
                     height: 52,
                     decoration: BoxDecoration(

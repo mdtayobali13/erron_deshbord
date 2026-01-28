@@ -210,9 +210,39 @@ class FinancePayoutsScreen extends StatelessWidget {
                     ),
                     const Divider(height: 1, color: Colors.white10),
                     // Table Rows
-                    ...viewModel.displayedRequests
-                        .map((request) => _buildRow(context, request))
-                        .toList(),
+                    if (viewModel.isLoading)
+                      const Padding(
+                        padding: EdgeInsets.all(40),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                      )
+                    else if (viewModel.errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Center(
+                          child: Text(
+                            viewModel.errorMessage!,
+                            style: GoogleFonts.outfit(color: Colors.redAccent),
+                          ),
+                        ),
+                      )
+                    else if (viewModel.displayedRequests.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(40),
+                        child: Center(
+                          child: Text(
+                            "No payout requests found",
+                            style: GoogleFonts.outfit(color: Colors.white54),
+                          ),
+                        ),
+                      )
+                    else
+                      ...viewModel.displayedRequests
+                          .map((request) => _buildRow(context, request))
+                          .toList(),
                   ],
                 ),
               );
@@ -401,13 +431,15 @@ class FinancePayoutsScreen extends StatelessWidget {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: _getStatusColor(request.status).withOpacity(0.1),
+                  color: _getStatusColor(
+                    request.displayStatus,
+                  ).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  request.status,
+                  request.displayStatus,
                   style: GoogleFonts.outfit(
-                    color: _getStatusColor(request.status),
+                    color: _getStatusColor(request.displayStatus),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -418,7 +450,9 @@ class FinancePayoutsScreen extends StatelessWidget {
           // Action
           Expanded(
             flex: 2,
-            child: (request.status == "Pending" || request.status == "Approved")
+            child:
+                (request.displayStatus == "Pending" ||
+                    request.displayStatus == "Approved")
                 ? UnconstrainedBox(
                     alignment: Alignment.centerLeft,
                     child: ElevatedButton(
@@ -451,7 +485,8 @@ class FinancePayoutsScreen extends StatelessWidget {
     );
   }
 
-  Color _getStatusColor(String status) {
+  Color _getStatusColor(String? status) {
+    if (status == null) return Colors.white38;
     switch (status) {
       case "Verified":
       case "Approved":

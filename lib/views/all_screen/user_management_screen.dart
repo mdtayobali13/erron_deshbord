@@ -121,9 +121,9 @@ class UserManagementScreen extends StatelessWidget {
           LayoutBuilder(
             builder: (context, constraints) {
               int crossAxisCount = 4;
-              if (constraints.maxWidth < 1300) crossAxisCount = 3;
-              if (constraints.maxWidth < 900) crossAxisCount = 2;
-              if (constraints.maxWidth < 600) crossAxisCount = 1;
+              if (constraints.maxWidth < 1400) crossAxisCount = 3;
+              if (constraints.maxWidth < 1000) crossAxisCount = 2;
+              if (constraints.maxWidth < 650) crossAxisCount = 1;
 
               return GridView.builder(
                 shrinkWrap: true,
@@ -133,7 +133,7 @@ class UserManagementScreen extends StatelessWidget {
                   crossAxisCount: crossAxisCount,
                   crossAxisSpacing: 20,
                   mainAxisSpacing: 20,
-                  childAspectRatio: crossAxisCount == 1 ? 1.5 : 0.90,
+                  childAspectRatio: crossAxisCount == 1 ? 1.4 : 0.82,
                 ),
                 itemBuilder: (context, index) {
                   return UserCard(user: viewModel.displayedUsers[index]);

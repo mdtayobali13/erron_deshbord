@@ -86,12 +86,14 @@ class DashboardScreen extends StatelessWidget {
                       title: "Revenue Trend",
                       data: viewModel.revenueTrend,
                       baseColor: AppColors.primary,
+                      action: _buildYearDropdown(context, viewModel),
                     ),
                     const SizedBox(height: 20),
                     ChartCard(
                       title: "New User",
                       data: viewModel.newUserTrend,
                       baseColor: AppColors.success,
+                      action: _buildYearDropdown(context, viewModel),
                     ),
                   ],
                 );
@@ -103,6 +105,7 @@ class DashboardScreen extends StatelessWidget {
                       title: "Revenue Trend",
                       data: viewModel.revenueTrend,
                       baseColor: AppColors.primary,
+                      action: _buildYearDropdown(context, viewModel),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -111,6 +114,7 @@ class DashboardScreen extends StatelessWidget {
                       title: "New User",
                       data: viewModel.newUserTrend,
                       baseColor: AppColors.success,
+                      action: _buildYearDropdown(context, viewModel),
                     ),
                   ),
                 ],
@@ -120,7 +124,6 @@ class DashboardScreen extends StatelessWidget {
 
           const SizedBox(height: 30),
 
-          // Live Streams Section
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -128,9 +131,9 @@ class DashboardScreen extends StatelessWidget {
                 color: AppColors.primary.withOpacity(0.5),
                 width: 1,
                 style: BorderStyle.solid,
-              ), // Dashed ideal, solid for now
+              ),
               borderRadius: BorderRadius.circular(16),
-              // color: AppColors.surface, // Optional: if we want a darker bg for this section
+        
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +156,9 @@ class DashboardScreen extends StatelessWidget {
                     return GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: viewModel.previewStreams.length,
+                      itemCount: viewModel.previewStreams.length > 3
+                          ? 3
+                          : viewModel.previewStreams.length,
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: 20,
@@ -172,6 +177,50 @@ class DashboardScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildYearDropdown(BuildContext context, OverviewViewModel viewModel) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<int>(
+          value: viewModel.selectedYear,
+          dropdownColor: const Color(0xFF2563EB),
+          icon: const Icon(
+            Icons.keyboard_arrow_down,
+            color: Colors.white,
+            size: 16,
+          ),
+          isDense: true,
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+          items: [
+            for (int i = 2020; i <= DateTime.now().year; i++)
+              DropdownMenuItem(
+                value: i,
+                child: Text(
+                  "$i",
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+          ],
+          onChanged: (val) {
+            if (val != null) viewModel.updateYear(val);
+          },
+        ),
       ),
     );
   }

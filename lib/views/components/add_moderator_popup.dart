@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import '../../utils/toast_helper.dart';
+import '../../view_models/moderator_view_model.dart';
 
 class AddModeratorPopup extends StatefulWidget {
   const AddModeratorPopup({super.key});
@@ -9,6 +12,11 @@ class AddModeratorPopup extends StatefulWidget {
 }
 
 class _AddModeratorPopupState extends State<AddModeratorPopup> {
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+
   String _status = "Active";
   final Map<String, bool> _permissions = {
     "View Reports": true,
@@ -21,7 +29,65 @@ class _AddModeratorPopupState extends State<AddModeratorPopup> {
   };
 
   @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleCreateModerator() async {
+    if (_fullNameController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _usernameController.text.isEmpty ||
+        _passwordController.text.isEmpty) {
+      ToastHelper.error(
+        context,
+        title: "Error",
+        message: "Please fill all fields",
+      );
+      return;
+    }
+
+    final moderatorData = {
+      "full_name": _fullNameController.text,
+      "email": _emailController.text,
+      "username": _usernameController.text,
+      "password": _passwordController.text,
+      "is_active": _status == "Active",
+      "can_view_reports": _permissions["View Reports"] ?? false,
+      "can_review_appeals": _permissions["Review Appeals"] ?? false,
+      "can_access_live_monitor": _permissions["Access Live Monitor"] ?? false,
+      "can_system_config": _permissions["System Config"] ?? false,
+      "can_issue_bans": _permissions["Issue Bans"] ?? false,
+      "can_manage_users": _permissions["Manage Users"] ?? false,
+      "can_approve_payouts": _permissions["Approve Payouts"] ?? false,
+    };
+
+    final viewModel = Provider.of<ModeratorViewModel>(context, listen: false);
+    final success = await viewModel.createModerator(moderatorData);
+
+    if (success && mounted) {
+      ToastHelper.success(
+        context,
+        title: "Success",
+        message: "New moderator account has been created",
+      );
+      Navigator.pop(context);
+    } else if (mounted) {
+      ToastHelper.error(
+        context,
+        title: "Failed",
+        message: viewModel.errorMessage ?? "Could not create moderator",
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final viewModel = Provider.of<ModeratorViewModel>(context);
+
     return Container(
       width: 700,
       constraints: BoxConstraints(
@@ -103,27 +169,29 @@ class _AddModeratorPopupState extends State<AddModeratorPopup> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Text Fields
-                  _buildLabelledTextField("Full Name", "Enter full name"),
+                  _buildLabelledTextField(
+                    "Full Name",
+                    "Enter full name",
+                    controller: _fullNameController,
+                  ),
                   const SizedBox(height: 20),
                   _buildLabelledTextField(
                     "Password",
-                    "moderator10",
+                    "Enter password",
                     isPassword: true,
+                    controller: _passwordController,
                   ),
                   const SizedBox(height: 20),
-                  _buildLabelledTextField("User Name", "moderator10"),
+                  _buildLabelledTextField(
+                    "User Name",
+                    "Enter username",
+                    controller: _usernameController,
+                  ),
                   const SizedBox(height: 20),
                   _buildLabelledTextField(
                     "Email Address",
                     "moderator@platform.com",
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "The password & User name will be automatically sent to the email address: moderator@platform.com",
-                    style: GoogleFonts.outfit(
-                      color: Colors.white24,
-                      fontSize: 11,
-                    ),
+                    controller: _emailController,
                   ),
                   const SizedBox(height: 32),
 
@@ -262,7 +330,7 @@ class _AddModeratorPopupState extends State<AddModeratorPopup> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: viewModel.isLoading ? null : _handleCreateModerator,
                     child: Container(
                       height: 52,
                       decoration: BoxDecoration(
@@ -277,14 +345,23 @@ class _AddModeratorPopupState extends State<AddModeratorPopup> {
                         ],
                       ),
                       child: Center(
-                        child: Text(
-                          "Create Moderator",
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
+                        child: viewModel.isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                "Create Moderator",
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -301,6 +378,7 @@ class _AddModeratorPopupState extends State<AddModeratorPopup> {
     String label,
     String hint, {
     bool isPassword = false,
+    required TextEditingController controller,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,6 +400,7 @@ class _AddModeratorPopupState extends State<AddModeratorPopup> {
             border: Border.all(color: Colors.white.withOpacity(0.1)),
           ),
           child: TextField(
+            controller: controller,
             obscureText: isPassword,
             style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
             decoration: InputDecoration(

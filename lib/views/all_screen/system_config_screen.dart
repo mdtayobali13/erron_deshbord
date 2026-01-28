@@ -3,13 +3,49 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../view_models/system_config_view_model.dart';
 import '../../models/audit_log_model.dart';
+import '../../utils/toast_helper.dart';
 
-class SystemConfigScreen extends StatelessWidget {
+class SystemConfigScreen extends StatefulWidget {
   const SystemConfigScreen({super.key});
+
+  @override
+  State<SystemConfigScreen> createState() => _SystemConfigScreenState();
+}
+
+class _SystemConfigScreenState extends State<SystemConfigScreen> {
+  final TextEditingController _tokenPricingController = TextEditingController();
+  final TextEditingController _commissionController = TextEditingController();
+  final TextEditingController _minWithdrawalController =
+      TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    _tokenPricingController.dispose();
+    _commissionController.dispose();
+    _minWithdrawalController.dispose();
+    super.dispose();
+  }
+
+  bool _isInitialized = false;
+
+  void _syncControllers(SystemConfigViewModel viewModel) {
+    if (!_isInitialized && viewModel.payoutConfig != null) {
+      _tokenPricingController.text = viewModel.tokenPricing.toString();
+      _commissionController.text = viewModel.platformCommission.toString();
+      _minWithdrawalController.text = viewModel.minWithdrawalAmount.toString();
+      _isInitialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<SystemConfigViewModel>(context);
+    _syncControllers(viewModel);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
@@ -33,40 +69,85 @@ class SystemConfigScreen extends StatelessWidget {
           const SizedBox(height: 40),
 
           // First Row: Toggles and Pricing
-          // First Row: Toggles and Pricing
-          // First Row: Toggles and Pricing
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Feature Toggles
               Expanded(
-                flex: 1,
                 child: _buildSectionCard(
                   title: "Feature Toggles (Emergency Switches)",
                   child: Column(
                     children: [
                       _buildToggleItem(
+                        context: context,
                         icon: Icons.card_giftcard,
                         title: "Enable Gifting",
                         subtitle: "Allow users to send gifts",
                         value: viewModel.enableGifting,
-                        onChanged: viewModel.toggleGifting,
+                        onChanged: (value) {
+                          viewModel.toggleGifting(value);
+                          if (value) {
+                            ToastHelper.success(
+                              context,
+                              title: "Enabled",
+                              message: "Gifting enabled successfully",
+                            );
+                          } else {
+                            ToastHelper.error(
+                              context,
+                              title: "Disabled",
+                              message: "Gifting disabled successfully",
+                            );
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                       _buildToggleItem(
+                        context: context,
                         icon: Icons.diamond_outlined,
                         title: "Enable Paid Streams",
                         subtitle: "Allow premium content",
                         value: viewModel.enablePaidStreams,
-                        onChanged: viewModel.togglePaidStreams,
+                        onChanged: (value) {
+                          viewModel.togglePaidStreams(value);
+                          if (value) {
+                            ToastHelper.success(
+                              context,
+                              title: "Enabled",
+                              message: "Paid Streams enabled successfully",
+                            );
+                          } else {
+                            ToastHelper.error(
+                              context,
+                              title: "Disabled",
+                              message: "Paid Streams disabled successfully",
+                            );
+                          }
+                        },
                       ),
                       const SizedBox(height: 16),
                       _buildToggleItem(
+                        context: context,
                         icon: Icons.person_add_outlined,
                         title: "New User Sign-ups",
                         subtitle: "Allow new registrations",
                         value: viewModel.newUserSignups,
-                        onChanged: viewModel.toggleNewUserSignups,
+                        onChanged: (value) {
+                          viewModel.toggleNewUserSignups(value);
+                          if (value) {
+                            ToastHelper.success(
+                              context,
+                              title: "Enabled",
+                              message: "User Sign-ups enabled successfully",
+                            );
+                          } else {
+                            ToastHelper.error(
+                              context,
+                              title: "Disabled",
+                              message: "User Sign-ups disabled successfully",
+                            );
+                          }
+                        },
                       ),
                     ],
                   ),
@@ -75,7 +156,6 @@ class SystemConfigScreen extends StatelessWidget {
               const SizedBox(width: 24),
               // Pricing Configuration
               Expanded(
-                flex: 1,
                 child: _buildSectionCard(
                   title: "Pricing Configuration",
                   subtitle: "Token pricing and platform fees",
@@ -84,18 +164,24 @@ class SystemConfigScreen extends StatelessWidget {
                     children: [
                       _buildPricingInput(
                         label: "Token Pricing (USD per Token)",
-                        value: "\$${viewModel.tokenPricing}",
-                        onTap: () {},
+                        controller: _tokenPricingController,
+                        prefix: "\$",
                       ),
                       const SizedBox(height: 24),
                       _buildPricingInput(
                         label: "Platform Commission (%)",
-                        value: "${viewModel.platformCommission}%",
-                        onTap: () {},
+                        controller: _commissionController,
+                        suffix: "%",
+                      ),
+                      const SizedBox(height: 24),
+                      _buildPricingInput(
+                        label: "Min Withdrawal Amount (USD)",
+                        controller: _minWithdrawalController,
+                        prefix: "\$",
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        "Example: If a host earns \$100, they receive \$${100 - viewModel.platformCommission}.00 and platform takes \$${viewModel.platformCommission}.00",
+                        "Example: If a host earns \$100, they receive \$${(100 - (double.tryParse(_commissionController.text) ?? 0)).toStringAsFixed(0)}.00 and platform takes \$${(double.tryParse(_commissionController.text) ?? 0).toStringAsFixed(0)}.00",
                         style: GoogleFonts.outfit(
                           color: Colors.white38,
                           fontSize: 12,
@@ -106,7 +192,50 @@ class SystemConfigScreen extends StatelessWidget {
                         width: double.infinity,
                         height: 52,
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: viewModel.isLoading
+                              ? null
+                              : () async {
+                                  // Update viewModel values from controllers
+                                  viewModel.setTokenPricing(
+                                    double.tryParse(
+                                          _tokenPricingController.text,
+                                        ) ??
+                                        0,
+                                  );
+                                  viewModel.setPlatformCommission(
+                                    double.tryParse(
+                                          _commissionController.text,
+                                        ) ??
+                                        0,
+                                  );
+                                  viewModel.setMinWithdrawalAmount(
+                                    double.tryParse(
+                                          _minWithdrawalController.text,
+                                        ) ??
+                                        0,
+                                  );
+
+                                  final success = await viewModel
+                                      .updatePayoutConfig();
+                                  if (context.mounted) {
+                                    if (success) {
+                                      ToastHelper.success(
+                                        context,
+                                        title: "Success",
+                                        message:
+                                            "Pricing configuration updated successfully",
+                                      );
+                                    } else {
+                                      ToastHelper.error(
+                                        context,
+                                        title: "Error",
+                                        message:
+                                            viewModel.errorMessage ??
+                                            "Failed to update pricing",
+                                      );
+                                    }
+                                  }
+                                },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2563EB),
                             foregroundColor: Colors.white,
@@ -115,13 +244,22 @@ class SystemConfigScreen extends StatelessWidget {
                             ),
                             elevation: 0,
                           ),
-                          child: Text(
-                            "Save Configuration",
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
-                          ),
+                          child: viewModel.isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text(
+                                  "Save Configuration",
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
                         ),
                       ),
                     ],
@@ -143,7 +281,6 @@ class SystemConfigScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          // Security Audit Log section
           Container(
             decoration: BoxDecoration(
               color: const Color(0xFF11141D),
@@ -282,6 +419,7 @@ class SystemConfigScreen extends StatelessWidget {
   }
 
   Widget _buildToggleItem({
+    required BuildContext context,
     required IconData icon,
     required String title,
     required String subtitle,
@@ -343,8 +481,9 @@ class SystemConfigScreen extends StatelessWidget {
 
   Widget _buildPricingInput({
     required String label,
-    required String value,
-    required VoidCallback onTap,
+    required TextEditingController controller,
+    String? prefix,
+    String? suffix,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,25 +493,33 @@ class SystemConfigScreen extends StatelessWidget {
           style: GoogleFonts.outfit(color: Colors.white38, fontSize: 12),
         ),
         const SizedBox(height: 8),
-        GestureDetector(
-          onTap: onTap,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.02),
+        TextField(
+          controller: controller,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          onChanged: (val) => setState(() {}), // Refresh example calculation
+          style: GoogleFonts.outfit(color: Colors.white, fontSize: 15),
+          decoration: InputDecoration(
+            prefixText: prefix,
+            prefixStyle: GoogleFonts.outfit(color: Colors.white, fontSize: 15),
+            suffixText: suffix,
+            suffixStyle: GoogleFonts.outfit(color: Colors.white, fontSize: 15),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.02),
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  value,
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 15),
-                ),
-                const Icon(Icons.unfold_more, color: Colors.white38, size: 20),
-              ],
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.white.withOpacity(0.1)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: const Color(0xFF2563EB)),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
             ),
           ),
         ),
@@ -403,9 +550,15 @@ class SystemConfigScreen extends StatelessWidget {
         children: [
           Expanded(
             flex: 2,
-            child: Text(
-              log.id,
-              style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14),
+            child: Tooltip(
+              message: log.id ?? "",
+              child: Text(
+                (log.id != null && log.id!.length > 8)
+                    ? "${log.id!.substring(0, 8)}..."
+                    : (log.id ?? "N/A"),
+                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ),
           Expanded(
@@ -422,14 +575,14 @@ class SystemConfigScreen extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Text(
-              log.action,
+              log.action ?? "N/A",
               style: GoogleFonts.outfit(color: Colors.white70, fontSize: 14),
             ),
           ),
           Expanded(
             flex: 3,
             child: Text(
-              log.target,
+              log.target ?? "N/A",
               style: GoogleFonts.outfit(color: Colors.white38, fontSize: 14),
             ),
           ),
@@ -443,13 +596,13 @@ class SystemConfigScreen extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: _getSeverityColor(log.severity).withOpacity(0.1),
+                  color: _getSeverityColor(log.severity ?? "").withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  log.severity,
+                  log.severity ?? "Unknown",
                   style: GoogleFonts.outfit(
-                    color: _getSeverityColor(log.severity),
+                    color: _getSeverityColor(log.severity ?? ""),
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
                   ),
@@ -460,7 +613,9 @@ class SystemConfigScreen extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Text(
-              log.timestamp,
+              log.timestamp != null
+                  ? log.timestamp!.toLocal().toString().split('.')[0]
+                  : "N/A",
               style: GoogleFonts.outfit(color: Colors.white38, fontSize: 14),
             ),
           ),

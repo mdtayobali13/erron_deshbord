@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../models/moderator_model.dart';
 import '../../view_models/moderator_view_model.dart';
+import '../../utils/toast_helper.dart';
 
 class ModeratorDetailPopup extends StatefulWidget {
   final Moderator moderator;
@@ -14,6 +15,7 @@ class ModeratorDetailPopup extends StatefulWidget {
 
 class _ModeratorDetailPopupState extends State<ModeratorDetailPopup> {
   late String _status;
+  bool _isLoading = false;
   final Map<String, bool> _permissions = {
     "View Reports": true,
     "Review Appeals": true,
@@ -27,7 +29,16 @@ class _ModeratorDetailPopupState extends State<ModeratorDetailPopup> {
   @override
   void initState() {
     super.initState();
-    _status = widget.moderator.status;
+    _status = widget.moderator.isActive == true ? "Active" : "Inactive";
+    _permissions["View Reports"] = widget.moderator.canViewReports ?? false;
+    _permissions["Review Appeals"] = widget.moderator.canReviewAppeals ?? false;
+    _permissions["Access Live Monitor"] =
+        widget.moderator.canAccessLiveMonitor ?? false;
+    _permissions["System Config"] = widget.moderator.canSystemConfig ?? false;
+    _permissions["Issue Bans"] = widget.moderator.canIssueBans ?? false;
+    _permissions["Manage Users"] = widget.moderator.canManageUsers ?? false;
+    _permissions["Approve Payouts"] =
+        widget.moderator.canApprovePayouts ?? false;
   }
 
   @override
@@ -59,7 +70,7 @@ class _ModeratorDetailPopupState extends State<ModeratorDetailPopup> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.moderator.name,
+                    widget.moderator.fullName ?? "No Name",
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 24,
@@ -67,7 +78,7 @@ class _ModeratorDetailPopupState extends State<ModeratorDetailPopup> {
                     ),
                   ),
                   Text(
-                    widget.moderator.username,
+                    widget.moderator.username ?? "moderator",
                     style: GoogleFonts.outfit(
                       color: Colors.white38,
                       fontSize: 14,
@@ -215,8 +226,15 @@ class _ModeratorDetailPopupState extends State<ModeratorDetailPopup> {
                       context,
                       listen: false,
                     );
-                    viewModel.deleteModerator(widget.moderator.id);
-                    Navigator.pop(context);
+                    viewModel.deleteModerator(widget.moderator.id ?? "");
+                    if (context.mounted) {
+                      ToastHelper.success(
+                        context,
+                        title: "Deleted",
+                        message: "Moderator account successfully removed",
+                      );
+                      Navigator.pop(context);
+                    }
                   },
                   child: Container(
                     height: 50,
@@ -265,21 +283,89 @@ class _ModeratorDetailPopupState extends State<ModeratorDetailPopup> {
               const SizedBox(width: 12),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: _isLoading
+                      ? null
+                      : () async {
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          final viewModel = Provider.of<ModeratorViewModel>(
+                            context,
+                            listen: false,
+                          );
+
+                          final updateData = {
+                            "is_active": _status == "Active",
+                            "can_view_reports":
+                                _permissions["View Reports"] ?? false,
+                            "can_review_appeals":
+                                _permissions["Review Appeals"] ?? false,
+                            "can_access_live_monitor":
+                                _permissions["Access Live Monitor"] ?? false,
+                            "can_system_config":
+                                _permissions["System Config"] ?? false,
+                            "can_issue_bans":
+                                _permissions["Issue Bans"] ?? false,
+                            "can_manage_users":
+                                _permissions["Manage Users"] ?? false,
+                            "can_approve_payouts":
+                                _permissions["Approve Payouts"] ?? false,
+                          };
+
+                          final success = await viewModel.updateModerator(
+                            widget.moderator.id ?? "",
+                            updateData,
+                          );
+
+                          if (mounted) {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          }
+
+                          if (success && context.mounted) {
+                            ToastHelper.success(
+                              context,
+                              title: "Success",
+                              message: "Moderator permissions updated",
+                            );
+                            Navigator.pop(context);
+                          } else if (context.mounted) {
+                            ToastHelper.error(
+                              context,
+                              title: "Failed",
+                              message:
+                                  viewModel.errorMessage ??
+                                  "Could not update moderator",
+                            );
+                          }
+                        },
                   child: Container(
                     height: 50,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2563EB),
+                      color: _isLoading
+                          ? const Color(0xFF2563EB).withOpacity(0.7)
+                          : const Color(0xFF2563EB),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
-                      child: Text(
-                        "Save Changes",
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              "Save Changes",
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
                 ),
