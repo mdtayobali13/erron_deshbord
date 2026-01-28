@@ -1,31 +1,33 @@
-# ---------- BUILD ----------
-FROM ghcr.io/cirruslabs/flutter:3.22.0 AS build
-# Dart >= 3.10 included
+# ----------------------------
+# Build stage
+# ----------------------------
+FROM flutter:3.22.0 AS build
 
+# Set working directory
 WORKDIR /app
 
-# Only pubspec first (better cache)
+# Copy pubspec files
 COPY pubspec.yaml pubspec.lock ./
+
+# Get dependencies
 RUN flutter pub get
 
-# Copy rest of the source
+# Copy rest of the app
 COPY . .
 
-# Build Flutter web
+# Build web release
 RUN flutter build web --release
 
-# ---------- RUN ----------
+# ----------------------------
+# Serve stage
+# ----------------------------
 FROM nginx:alpine
 
-# Remove default nginx website
-RUN rm -rf /usr/share/nginx/html/*
-
-# Copy build output
+# Copy built web app from build stage
 COPY --from=build /app/build/web /usr/share/nginx/html
 
-# Optional: custom nginx config (SPA support)
-# COPY nginx.conf /etc/nginx/conf.d/default.conf
-
+# Expose port 80
 EXPOSE 80
 
+# Run nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]
