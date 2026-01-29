@@ -6,6 +6,7 @@ import '../../../utils/app_colors.dart';
 import '../components/stat_card.dart';
 import '../components/chart_card.dart';
 import '../components/live_stream_card.dart';
+import '../components/app_loading_indicator.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -16,9 +17,7 @@ class DashboardScreen extends StatelessWidget {
     // Trigger data load if empty (handled in init but safe to check)
 
     if (viewModel.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
+      return const AppLoadingIndicator();
     }
 
     return SingleChildScrollView(
@@ -133,7 +132,6 @@ class DashboardScreen extends StatelessWidget {
                 style: BorderStyle.solid,
               ),
               borderRadius: BorderRadius.circular(16),
-        
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

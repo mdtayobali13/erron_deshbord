@@ -24,10 +24,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
     if (mounted) {
       if (isLoggedIn) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const MainLayout()),
-        );
+        final index = await PrefsService.getDashboardIndex();
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainLayout(initialIndex: index),
+            ),
+          );
+        }
       } else {
         Navigator.pushReplacement(
           context,

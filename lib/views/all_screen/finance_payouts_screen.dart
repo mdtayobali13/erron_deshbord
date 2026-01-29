@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../view_models/finance_view_model.dart';
 import '../../models/payout_model.dart';
+import '../components/app_loading_indicator.dart';
 import '../components/payout_review_popup.dart';
 
 class FinancePayoutsScreen extends StatelessWidget {
@@ -227,11 +228,7 @@ class FinancePayoutsScreen extends StatelessWidget {
                     if (viewModel.isLoading)
                       const Padding(
                         padding: EdgeInsets.all(40),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF2563EB),
-                          ),
-                        ),
+                        child: AppLoadingIndicator(),
                       )
                     else if (viewModel.errorMessage != null)
                       Padding(

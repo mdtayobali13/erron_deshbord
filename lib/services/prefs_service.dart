@@ -33,6 +33,18 @@ class PrefsService {
     await prefs.clear();
   }
 
+  static const String keyDashboardIndex = 'dashboard_index';
+
+  static Future<void> saveDashboardIndex(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(keyDashboardIndex, index);
+  }
+
+  static Future<int> getDashboardIndex() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(keyDashboardIndex) ?? 0;
+  }
+
   static Future<bool> isLoggedIn() async {
     final token = await getToken();
     return token != null && token.isNotEmpty;

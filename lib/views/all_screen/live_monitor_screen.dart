@@ -5,6 +5,7 @@ import '../../../view_models/live_monitor_view_model.dart';
 import '../../../utils/app_colors.dart';
 import '../../../utils/toast_helper.dart';
 import '../components/live_stream_card.dart';
+import '../components/app_loading_indicator.dart';
 
 class LiveMonitorScreen extends StatefulWidget {
   const LiveMonitorScreen({super.key});
@@ -24,9 +25,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen> {
 
     // Trigger loading if needed or show loading
     if (viewModel.isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: AppColors.primary),
-      );
+      return const AppLoadingIndicator();
     }
 
     // Pagination Logic
@@ -144,7 +143,7 @@ class _LiveMonitorScreenState extends State<LiveMonitorScreen> {
                         ),
 
                         const SizedBox(width: 24),
-                    
+
                         const Spacer(),
 
                         // Right Filters

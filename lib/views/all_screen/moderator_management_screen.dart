@@ -5,6 +5,7 @@ import '../../utils/app_colors.dart';
 import '../../view_models/moderator_view_model.dart';
 import '../components/moderator_card.dart';
 import '../components/add_moderator_popup.dart';
+import '../components/app_loading_indicator.dart';
 
 class ModeratorManagementScreen extends StatelessWidget {
   const ModeratorManagementScreen({super.key});
@@ -26,11 +27,9 @@ class ModeratorManagementScreen extends StatelessWidget {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
       child: viewModel.isLoading
-          ? const Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 100),
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
+          ? const Padding(
+              padding: EdgeInsets.only(top: 100),
+              child: AppLoadingIndicator(),
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,

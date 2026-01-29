@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
+import '../../services/prefs_service.dart';
 import 'components/sidebar.dart';
 
 import 'all_screen/live_monitor_screen.dart';
@@ -12,14 +13,21 @@ import 'all_screen/finance_payouts_screen.dart';
 import 'all_screen/system_config_screen.dart';
 
 class MainLayout extends StatefulWidget {
-  const MainLayout({super.key});
+  final int initialIndex;
+  const MainLayout({super.key, this.initialIndex = 0});
 
   @override
   State<MainLayout> createState() => _MainLayoutState();
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   final List<Widget> _screens = [
     const DashboardScreen(),
@@ -46,6 +54,7 @@ class _MainLayoutState extends State<MainLayout> {
                 setState(() {
                   _selectedIndex = index;
                 });
+                PrefsService.saveDashboardIndex(index);
               },
             ),
 
@@ -69,6 +78,7 @@ class _MainLayoutState extends State<MainLayout> {
                     _selectedIndex = index;
                     Navigator.pop(context); // Close drawer
                   });
+                  PrefsService.saveDashboardIndex(index);
                 },
               ),
             )
