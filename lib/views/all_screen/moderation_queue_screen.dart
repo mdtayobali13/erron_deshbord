@@ -6,6 +6,7 @@ import '../../utils/app_colors.dart';
 import '../../utils/toast_helper.dart';
 import '../../models/report_model.dart';
 import '../../view_models/moderation_view_model.dart';
+import '../components/app_loading_indicator.dart';
 
 class ModerationQueueScreen extends StatefulWidget {
   const ModerationQueueScreen({super.key});
@@ -19,16 +20,16 @@ class _ModerationQueueScreenState extends State<ModerationQueueScreen> {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<ModerationViewModel>(context);
 
+    // Full page loading
+    if (viewModel.isLoading) {
+      return const AppLoadingIndicator();
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (viewModel.isLoading)
-            const LinearProgressIndicator(
-              color: AppColors.primary,
-              backgroundColor: Colors.transparent,
-            ),
           const SizedBox(height: 10),
           // Header
           Text(
