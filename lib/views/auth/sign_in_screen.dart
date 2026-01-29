@@ -29,7 +29,7 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   void _updateUrl() {
-    SystemNavigator.routeInformationUpdated(location: "/SignIn");
+    SystemNavigator.routeInformationUpdated(location: "/SignIn/admindeshbord");
   }
 
   @override

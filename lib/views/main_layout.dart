@@ -46,7 +46,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   void _updateUrl() {
     final pathName = _pathNames[_selectedIndex];
-    String newPath = "/$pathName";
+    String newPath = "/$pathName/admindeshbord";
 
     // Update browser URL without reloading
     SystemNavigator.routeInformationUpdated(location: newPath);

@@ -54,7 +54,46 @@ class MyApp extends StatelessWidget {
                 displayColor: AppColors.textPrimary,
               ),
         ),
-        home: const SplashScreen(),
+        home: _checkAccess() ? const SplashScreen() : const HiddenRootScreen(),
+      ),
+    );
+  }
+
+  bool _checkAccess() {
+    final path = Uri.base.path;
+    final host = Uri.base.host;
+
+    // Always allow on localhost
+    if (host == "localhost" || host == "127.0.0.1") return true;
+
+    // Check if path ends with /admindeshbord
+    return path.endsWith("/admindeshbord");
+  }
+}
+
+class HiddenRootScreen extends StatelessWidget {
+  const HiddenRootScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.public, color: Colors.white24, size: 64),
+            const SizedBox(height: 16),
+            Text(
+              "Public Website Coming Soon",
+              style: GoogleFonts.outfit(
+                color: Colors.white24,
+                fontSize: 18,
+                letterSpacing: 2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
