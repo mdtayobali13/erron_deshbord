@@ -14,9 +14,6 @@ import 'view_models/system_config_view_model.dart';
 import 'view_models/auth_view_model.dart';
 import 'views/splash_screen.dart';
 
-// The non-guessable path for the admin dashboard
-const String secretAdminPath = "/h7x2/k9m4/p1v8/admindash";
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
@@ -57,55 +54,7 @@ class MyApp extends StatelessWidget {
                 displayColor: AppColors.textPrimary,
               ),
         ),
-        home: _checkAccess() ? const SplashScreen() : const HiddenRootScreen(),
-      ),
-    );
-  }
-
-  bool _checkAccess() {
-    // Check the current URL path
-    final path = Uri.base.path;
-    final host = Uri.base.host;
-
-    // 1. Always allow access on localhost (for development convenience)
-    if (host == "localhost" || host == "127.0.0.1") {
-      return true;
-    }
-
-    // 2. In production, check for the secret path
-    // If it's the root, we show the hidden screen
-    if (path == "/" || path.isEmpty) {
-      return false;
-    }
-
-    // If the path contains our secret string, allow access
-    return path.contains(secretAdminPath);
-  }
-}
-
-class HiddenRootScreen extends StatelessWidget {
-  const HiddenRootScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.public, color: Colors.white24, size: 64),
-            const SizedBox(height: 16),
-            Text(
-              "Public Website Coming Soon",
-              style: GoogleFonts.outfit(
-                color: Colors.white24,
-                fontSize: 18,
-                letterSpacing: 2,
-              ),
-            ),
-          ],
-        ),
+        home: const SplashScreen(),
       ),
     );
   }

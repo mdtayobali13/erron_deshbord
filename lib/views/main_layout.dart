@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../utils/app_colors.dart';
 import '../../services/prefs_service.dart';
-import '../main.dart'; // To access secretAdminPath
 import 'components/sidebar.dart';
 
 import 'all_screen/live_monitor_screen.dart';
@@ -47,15 +46,7 @@ class _MainLayoutState extends State<MainLayout> {
 
   void _updateUrl() {
     final pathName = _pathNames[_selectedIndex];
-    final host = Uri.base.host;
-    String newPath;
-
-    if (host == "localhost" || host == "127.0.0.1") {
-      newPath = "/$pathName";
-    } else {
-      // In production, keep it buried under the secret path
-      newPath = "$secretAdminPath/$pathName";
-    }
+    String newPath = "/$pathName";
 
     // Update browser URL without reloading
     SystemNavigator.routeInformationUpdated(location: newPath);
