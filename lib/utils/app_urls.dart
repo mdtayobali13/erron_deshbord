@@ -27,5 +27,6 @@ class AppUrls {
   static const String userStatsMonthly = "$base/admin/stats/users/monthly";
   static const String revenueTrend = "$base/admin/stats/finance/revenue-trend";
   static const String payoutConfig = "$base/finance/admin/config/payout";
+  static const String financeOverview = "$base/admin/stats/finance/overview";
   static String payoutAction(String id) => "$payouts/$id/action";
 }

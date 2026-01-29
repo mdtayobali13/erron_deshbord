@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/payout_model.dart';
+import '../models/finance_stats_model.dart';
 import '../services/network_caller.dart';
 import '../utils/app_urls.dart';
 
@@ -7,9 +8,11 @@ class FinanceViewModel extends ChangeNotifier {
   List<PayoutRequest> _requests = [];
   bool _isLoading = false;
   String? _errorMessage;
+  FinanceStatsModel? _stats;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  FinanceStatsModel? get stats => _stats;
 
   // Pagination props
   int _currentPage = 1;
@@ -20,6 +23,19 @@ class FinanceViewModel extends ChangeNotifier {
 
   FinanceViewModel() {
     loadPayouts();
+    loadStats();
+  }
+
+  Future<void> loadStats() async {
+    final response = await NetworkCaller.getRequest(AppUrls.financeOverview);
+    if (response.isSuccess && response.responseData != null) {
+      try {
+        _stats = FinanceStatsModel.fromJson(response.responseData);
+        notifyListeners();
+      } catch (e) {
+        print("Error parsing FinanceStats: $e");
+      }
+    }
   }
 
   Future<void> loadPayouts() async {
