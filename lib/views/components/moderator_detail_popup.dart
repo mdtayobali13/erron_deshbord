@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/moderator_model.dart';
 import '../../view_models/moderator_view_model.dart';
 import '../../utils/toast_helper.dart';
+import 'app_loading_indicator.dart';
 
 class ModeratorDetailPopup extends StatefulWidget {
   final Moderator moderator;
@@ -354,9 +355,9 @@ class _ModeratorDetailPopupState extends State<ModeratorDetailPopup> {
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(
+                              child: AppLoadingIndicator(
                                 color: Colors.white,
-                                strokeWidth: 2,
+                                size: 20,
                               ),
                             )
                           : Text(

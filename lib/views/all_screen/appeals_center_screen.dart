@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../view_models/appeals_view_model.dart';
 import '../components/appeal_card.dart';
+import '../components/app_loading_indicator.dart';
 
 class AppealsCenterScreen extends StatelessWidget {
   const AppealsCenterScreen({super.key});
@@ -10,6 +11,11 @@ class AppealsCenterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<AppealsViewModel>(context);
+
+    // Full page loading
+    if (viewModel.isLoading) {
+      return const AppLoadingIndicator();
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
@@ -33,14 +39,7 @@ class AppealsCenterScreen extends StatelessWidget {
           const SizedBox(height: 30),
 
           // Loading Indicator
-          if (viewModel.isLoading)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(40),
-                child: CircularProgressIndicator(color: Color(0xFF2563EB)),
-              ),
-            )
-          else if (viewModel.displayedAppeals.isEmpty)
+          if (viewModel.displayedAppeals.isEmpty)
             // Empty State
             Center(
               child: Padding(

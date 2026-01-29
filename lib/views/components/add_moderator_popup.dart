@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../utils/toast_helper.dart';
 import '../../view_models/moderator_view_model.dart';
+import 'app_loading_indicator.dart';
 
 class AddModeratorPopup extends StatefulWidget {
   const AddModeratorPopup({super.key});
@@ -349,9 +350,9 @@ class _AddModeratorPopupState extends State<AddModeratorPopup> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(
+                                child: AppLoadingIndicator(
                                   color: Colors.white,
-                                  strokeWidth: 2,
+                                  size: 20,
                                 ),
                               )
                             : Text(

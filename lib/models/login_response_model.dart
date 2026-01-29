@@ -1,13 +1,28 @@
 class LoginRequestModel {
   String? username;
   String? password;
+  String? grantType;
+  String? scope;
+  String? clientId;
+  String? clientSecret;
 
-  LoginRequestModel({this.username, this.password});
+  LoginRequestModel({
+    this.username,
+    this.password,
+    this.grantType = 'password',
+    this.scope = '',
+    this.clientId = '',
+    this.clientSecret = '',
+  });
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['username'] = username;
     data['password'] = password;
+    data['grant_type'] = grantType;
+    data['scope'] = scope;
+    data['client_id'] = clientId;
+    data['client_secret'] = clientSecret;
     return data;
   }
 }

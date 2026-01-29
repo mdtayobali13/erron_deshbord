@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../view_models/system_config_view_model.dart';
 import '../../models/audit_log_model.dart';
 import '../../utils/toast_helper.dart';
+import '../components/app_loading_indicator.dart';
 
 class SystemConfigScreen extends StatefulWidget {
   const SystemConfigScreen({super.key});
@@ -46,6 +47,11 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<SystemConfigViewModel>(context);
     _syncControllers(viewModel);
+
+    // Full page loading
+    if (viewModel.isLoading) {
+      return const AppLoadingIndicator();
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
@@ -248,9 +254,9 @@ class _SystemConfigScreenState extends State<SystemConfigScreen> {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(
+                                  child: AppLoadingIndicator(
                                     color: Colors.white,
-                                    strokeWidth: 2,
+                                    size: 20,
                                   ),
                                 )
                               : Text(

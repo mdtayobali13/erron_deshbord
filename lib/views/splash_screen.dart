@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/prefs_service.dart';
 import 'auth/sign_in_screen.dart';
 import 'main_layout.dart';
+import 'components/app_loading_indicator.dart';
 import '../../utils/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            const CircularProgressIndicator(color: AppColors.primary),
+            const AppLoadingIndicator(),
           ],
         ),
       ),

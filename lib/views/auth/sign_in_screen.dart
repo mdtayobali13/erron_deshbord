@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../views/main_layout.dart';
+import '../../views/components/app_loading_indicator.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../utils/toast_helper.dart';
 
@@ -321,10 +322,7 @@ class _SignInScreenState extends State<SignInScreen> {
             ? const SizedBox(
                 height: 24,
                 width: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
+                child: AppLoadingIndicator(color: Colors.white, size: 24),
               )
             : Text(
                 'Sign In',

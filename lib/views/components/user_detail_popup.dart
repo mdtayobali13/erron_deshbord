@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/user_model.dart';
 import '../../view_models/user_management_view_model.dart';
 import '../../utils/toast_helper.dart';
+import 'app_loading_indicator.dart';
 
 class UserDetailPopup extends StatefulWidget {
   final AppUser user;
@@ -383,8 +384,8 @@ class _UserDetailPopupState extends State<UserDetailPopup> {
                                 ? const SizedBox(
                                     width: 18,
                                     height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                                    child: AppLoadingIndicator(
+                                      size: 18,
                                       color: Colors.white,
                                     ),
                                   )
@@ -557,15 +558,8 @@ class _UserDetailPopupState extends State<UserDetailPopup> {
       },
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
-        return Center(
-          child: CircularProgressIndicator(
-            value: loadingProgress.expectedTotalBytes != null
-                ? loadingProgress.cumulativeBytesLoaded /
-                      loadingProgress.expectedTotalBytes!
-                : null,
-            strokeWidth: 2,
-            color: Colors.white24,
-          ),
+        return const Center(
+          child: AppLoadingIndicator(size: 20, color: Colors.white24),
         );
       },
     );

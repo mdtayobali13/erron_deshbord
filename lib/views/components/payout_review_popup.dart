@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/payout_model.dart';
 import '../../view_models/finance_view_model.dart';
 import '../../utils/toast_helper.dart';
+import 'app_loading_indicator.dart';
 
 class PayoutReviewPopup extends StatelessWidget {
   final PayoutRequest request;
@@ -240,9 +241,9 @@ class PayoutReviewPopup extends StatelessWidget {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(
+                                  child: AppLoadingIndicator(
                                     color: Colors.white,
-                                    strokeWidth: 2,
+                                    size: 20,
                                   ),
                                 )
                               : Text(
@@ -298,9 +299,9 @@ class PayoutReviewPopup extends StatelessWidget {
                               ? const SizedBox(
                                   height: 20,
                                   width: 20,
-                                  child: CircularProgressIndicator(
+                                  child: AppLoadingIndicator(
                                     color: Colors.white,
-                                    strokeWidth: 2,
+                                    size: 20,
                                   ),
                                 )
                               : Text(

@@ -26,6 +26,11 @@ class FinancePayoutsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = Provider.of<FinanceViewModel>(context);
 
+    // Full page loading
+    if (viewModel.isLoading) {
+      return const AppLoadingIndicator();
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
       child: Column(
@@ -54,16 +59,16 @@ class FinancePayoutsScreen extends StatelessWidget {
               final stats = viewModel.stats;
               final String totalSales = stats != null
                   ? "\$${stats.totalTokenSalesUsd}"
-                  : "Loading...";
+                  : "\$0";
               final String totalPayouts = stats != null
                   ? "\$${stats.totalPayoutsUsd}"
-                  : "Loading...";
+                  : "\$0";
               final String profitMargin = stats != null
                   ? "\$${stats.profitMarginUsd}"
-                  : "Loading...";
+                  : "\$0";
               final String pendingPayouts = stats != null
                   ? "\$${stats.pendingPayoutsUsd}"
-                  : "Loading...";
+                  : "\$0";
 
               if (constraints.maxWidth < 700) {
                 // Mobile: Column
@@ -225,10 +230,29 @@ class FinancePayoutsScreen extends StatelessWidget {
                     ),
                     const Divider(height: 1, color: Colors.white10),
                     // Table Rows
-                    if (viewModel.isLoading)
-                      const Padding(
-                        padding: EdgeInsets.all(40),
-                        child: AppLoadingIndicator(),
+                    if (viewModel.displayedRequests.isEmpty)
+                      SizedBox(
+                        height: 200,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.inbox_outlined,
+                                size: 48,
+                                color: Colors.white24,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "No payout requests found",
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white38,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       )
                     else if (viewModel.errorMessage != null)
                       Padding(
@@ -236,17 +260,10 @@ class FinancePayoutsScreen extends StatelessWidget {
                         child: Center(
                           child: Text(
                             viewModel.errorMessage!,
-                            style: GoogleFonts.outfit(color: Colors.redAccent),
-                          ),
-                        ),
-                      )
-                    else if (viewModel.displayedRequests.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.all(40),
-                        child: Center(
-                          child: Text(
-                            "No payout requests found",
-                            style: GoogleFonts.outfit(color: Colors.white54),
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFEF4444),
+                              fontSize: 14,
+                            ),
                           ),
                         ),
                       )

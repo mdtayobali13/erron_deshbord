@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../view_models/user_management_view_model.dart';
 import '../components/user_card.dart';
+import '../components/app_loading_indicator.dart';
 
 class UserManagementScreen extends StatelessWidget {
   const UserManagementScreen({super.key});
@@ -11,6 +12,11 @@ class UserManagementScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<UserManagementViewModel>(context);
+
+    // Full page loading
+    if (viewModel.isLoading) {
+      return const AppLoadingIndicator();
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
