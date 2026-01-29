@@ -29,6 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (path.contains("AppealsCenter")) return 5;
     if (path.contains("FinancePayouts")) return 6;
     if (path.contains("SystemConfig")) return 7;
+    if (path.contains("SignIn")) return -2; // Special case for SignIn
     return -1; // Not found
   }
 
@@ -46,11 +47,23 @@ class _SplashScreenState extends State<SplashScreen> {
           index = await PrefsService.getDashboardIndex();
         }
 
+        if (index == -2) {
+          // If the path is /SignIn, show sign in screen
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SignInScreen()),
+            );
+          }
+          return;
+        }
+
         if (mounted) {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => MainLayout(initialIndex: index),
+              builder: (context) =>
+                  MainLayout(initialIndex: index == -1 ? 0 : index),
             ),
           );
         }

@@ -8,6 +8,8 @@ import '../../views/components/app_loading_indicator.dart';
 import '../../view_models/auth_view_model.dart';
 import '../../utils/toast_helper.dart';
 
+import 'package:flutter/services.dart';
+
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
@@ -19,6 +21,16 @@ class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _updateUrl();
+  }
+
+  void _updateUrl() {
+    SystemNavigator.routeInformationUpdated(location: "/SignIn");
+  }
 
   @override
   void dispose() {
