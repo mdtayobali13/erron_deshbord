@@ -19,13 +19,33 @@ class _SplashScreenState extends State<SplashScreen> {
     _checkLoginStatus();
   }
 
+  int _getIndexFromPath() {
+    final path = Uri.base.path;
+    if (path.contains("OverView")) return 0;
+    if (path.contains("LiveMonitor")) return 1;
+    if (path.contains("ModerationQueue")) return 2;
+    if (path.contains("UserManagement")) return 3;
+    if (path.contains("Moderators")) return 4;
+    if (path.contains("AppealsCenter")) return 5;
+    if (path.contains("FinancePayouts")) return 6;
+    if (path.contains("SystemConfig")) return 7;
+    return -1; // Not found
+  }
+
   Future<void> _checkLoginStatus() async {
     // Check login status immediately without delay
     final isLoggedIn = await PrefsService.isLoggedIn();
 
     if (mounted) {
       if (isLoggedIn) {
-        final index = await PrefsService.getDashboardIndex();
+        // Prioritize path from URL for deep linking
+        int index = _getIndexFromPath();
+
+        // If no valid path in URL, fallback to saved index
+        if (index == -1) {
+          index = await PrefsService.getDashboardIndex();
+        }
+
         if (mounted) {
           Navigator.pushReplacement(
             context,

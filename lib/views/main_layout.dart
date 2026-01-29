@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../utils/app_colors.dart';
 import '../../services/prefs_service.dart';
+import '../main.dart'; // To access secretAdminPath
 import 'components/sidebar.dart';
 
 import 'all_screen/live_monitor_screen.dart';
@@ -22,11 +24,49 @@ class MainLayout extends StatefulWidget {
 
 class _MainLayoutState extends State<MainLayout> {
   late int _selectedIndex;
+  static const List<String> _pathNames = [
+    "OverView",
+    "LiveMonitor",
+    "ModerationQueue",
+    "UserManagement",
+    "Moderators",
+    "AppealsCenter",
+    "FinancePayouts",
+    "SystemConfig",
+  ];
 
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
+    // Update URL on initial load if needed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateUrl();
+    });
+  }
+
+  void _updateUrl() {
+    final pathName = _pathNames[_selectedIndex];
+    final host = Uri.base.host;
+    String newPath;
+
+    if (host == "localhost" || host == "127.0.0.1") {
+      newPath = "/$pathName";
+    } else {
+      // In production, keep it buried under the secret path
+      newPath = "$secretAdminPath/$pathName";
+    }
+
+    // Update browser URL without reloading
+    SystemNavigator.routeInformationUpdated(location: newPath);
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    PrefsService.saveDashboardIndex(index);
+    _updateUrl();
   }
 
   final List<Widget> _screens = [
@@ -50,12 +90,7 @@ class _MainLayoutState extends State<MainLayout> {
           if (MediaQuery.of(context).size.width > 800)
             Sidebar(
               selectedIndex: _selectedIndex,
-              onItemSelected: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-                PrefsService.saveDashboardIndex(index);
-              },
+              onItemSelected: _onItemTapped,
             ),
 
           // Main Content
@@ -74,11 +109,8 @@ class _MainLayoutState extends State<MainLayout> {
               child: Sidebar(
                 selectedIndex: _selectedIndex,
                 onItemSelected: (index) {
-                  setState(() {
-                    _selectedIndex = index;
-                    Navigator.pop(context); // Close drawer
-                  });
-                  PrefsService.saveDashboardIndex(index);
+                  _onItemTapped(index);
+                  Navigator.pop(context); // Close drawer
                 },
               ),
             )

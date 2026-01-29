@@ -63,14 +63,22 @@ class MyApp extends StatelessWidget {
   }
 
   bool _checkAccess() {
-    // In web, check the current URL path
+    // Check the current URL path
     final path = Uri.base.path;
-    // During development (localhost), we usually allow access to / for convenience,
-    // but in production, we strictly check for the secret path.
+    final host = Uri.base.host;
+
+    // 1. Always allow access on localhost (for development convenience)
+    if (host == "localhost" || host == "127.0.0.1") {
+      return true;
+    }
+
+    // 2. In production, check for the secret path
+    // If it's the root, we show the hidden screen
     if (path == "/" || path.isEmpty) {
-      // If it's the root, we show the hidden screen (placeholder for public site)
       return false;
     }
+
+    // If the path contains our secret string, allow access
     return path.contains(secretAdminPath);
   }
 }
