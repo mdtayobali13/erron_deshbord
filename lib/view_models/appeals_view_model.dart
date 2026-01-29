@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/appeal_model.dart';
 import '../services/network_caller.dart';
+import '../utils/app_urls.dart';
 
 class AppealsViewModel extends ChangeNotifier {
   List<Appeal> _appeals = [];
@@ -40,7 +41,7 @@ class AppealsViewModel extends ChangeNotifier {
     try {
       print('📞 Fetching appeals from API...');
       final response = await NetworkCaller.getRequest(
-        'https://erronliveapp.mtscorporate.com/api/v1/apologies/',
+        '${AppUrls.base}/apologies/',
       );
 
       print('📊 Response Status: ${response.statusCode}');
@@ -113,11 +114,13 @@ class AppealsViewModel extends ChangeNotifier {
   }
 
   Future<bool> reviewAppeal(String appealId, String action) async {
+    _isLoading = true;
+    notifyListeners();
     try {
       print('📝 Reviewing appeal $appealId with action: $action');
 
       final response = await NetworkCaller.patchRequest(
-        'https://erronliveapp.mtscorporate.com/api/v1/apologies/$appealId/review',
+        '${AppUrls.base}/apologies/$appealId/review',
         body: {
           'action': action, // APOLOGY_ACCEPTED or APOLOGY_REJECTED
         },
@@ -139,6 +142,9 @@ class AppealsViewModel extends ChangeNotifier {
     } catch (e) {
       print('❌ Exception reviewing appeal: $e');
       return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
   }
 }

@@ -8,6 +8,7 @@ import '../../view_models/live_monitor_view_model.dart';
 import '../../view_models/dashboard_view_model.dart';
 import '../../view_models/overview_view_model.dart';
 import '../../utils/toast_helper.dart';
+import 'app_loading_indicator.dart';
 
 class LiveStreamCard extends StatelessWidget {
   final LiveStream stream;
@@ -618,6 +619,17 @@ class _LiveMonitorPopup extends StatelessWidget {
                                       ),
                                     );
                                   },
+                                  loadingBuilder:
+                                      (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return const Center(
+                                          child: AppLoadingIndicator(
+                                            size: 30,
+                                            color: Colors.white24,
+                                          ),
+                                        );
+                                      },
                                 ),
                                 Positioned(
                                   top: 12,
@@ -835,9 +847,7 @@ class _LiveMonitorPopup extends StatelessWidget {
                                 } catch (_) {}
                                 final success = await context
                                     .read<LiveMonitorViewModel>()
-                                    .toggleFreezeStream(
-                                      stream.rawId!,
-                                    );
+                                    .toggleFreezeStream(stream.rawId!);
                                 if (context.mounted) {
                                   if (success) {
                                     ToastHelper.success(

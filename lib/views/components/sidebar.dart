@@ -5,6 +5,7 @@ import '../../utils/app_colors.dart';
 import '../../utils/toast_helper.dart';
 import '../../view_models/auth_view_model.dart';
 import '../auth/sign_in_screen.dart';
+import 'app_loading_indicator.dart';
 
 class Sidebar extends StatelessWidget {
   final int selectedIndex;
@@ -110,6 +111,15 @@ class Sidebar extends StatelessWidget {
                         color: AppColors.surface,
                         child: const Icon(Icons.person, color: Colors.white54),
                       ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: AppLoadingIndicator(
+                            size: 14,
+                            color: Colors.white24,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

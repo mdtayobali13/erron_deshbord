@@ -1,5 +1,5 @@
 class AppUrls {
-  static const String base = "https://instalive.cloud/api/v1";
+  static const String base = "https://erronliveapp.instalive.cloud/api/v1";
   static const String authBase = "$base/auth";
 
   static const String login = "$authBase/login";

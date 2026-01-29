@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/appeal_model.dart';
 import '../../view_models/appeals_view_model.dart';
 import '../../utils/toast_helper.dart';
+import 'app_loading_indicator.dart';
 
 class AppealReviewPopup extends StatelessWidget {
   final Appeal appeal;
@@ -212,16 +213,19 @@ class AppealReviewPopup extends StatelessWidget {
                         color: const Color(0xFFEF4444),
                         borderRadius: BorderRadius.circular(100),
                       ),
-                      child: Center(
-                        child: Text(
-                          "Dismiss Appeal",
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
+                      child: viewModel.isLoading
+                          ? const AppLoadingIndicator(
+                              size: 20,
+                              color: Colors.white,
+                            )
+                          : Text(
+                              "Dismiss Appeal",
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -269,16 +273,19 @@ class AppealReviewPopup extends StatelessWidget {
                         color: const Color(0xFF2563EB),
                         borderRadius: BorderRadius.circular(100),
                       ),
-                      child: Center(
-                        child: Text(
-                          "Lift Ban (Restore Access)",
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
+                      child: viewModel.isLoading
+                          ? const AppLoadingIndicator(
+                              size: 20,
+                              color: Colors.white,
+                            )
+                          : Text(
+                              "Lift Ban (Restore Access)",
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
                     ),
                   ),
                 ),

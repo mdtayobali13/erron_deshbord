@@ -535,6 +535,15 @@ class _ReviewTicketPopup extends StatelessWidget {
                           ],
                         ),
                       ),
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const Center(
+                          child: AppLoadingIndicator(
+                            size: 30,
+                            color: Colors.white24,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(height: 24),
