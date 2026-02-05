@@ -1,11 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
-import '../../views/main_layout.dart';
-import '../../view_models/auth_view_model.dart';
+import '../../controllers/auth_controller.dart';
 import '../../utils/toast_helper.dart';
+import '../../routes/app_routes.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -28,8 +28,6 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = context.watch<AuthViewModel>();
-
     return Scaffold(
       body: Stack(
         children: [
@@ -98,7 +96,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     const SizedBox(height: 48),
 
                     // Login Card
-                    _buildLoginCard(authViewModel),
+                    _buildLoginCard(),
 
                     const SizedBox(height: 48),
 
@@ -152,7 +150,9 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildLoginCard(AuthViewModel viewModel) {
+  Widget _buildLoginCard() {
+    final authController = AuthController.to;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(32),
       child: BackdropFilter(
@@ -179,16 +179,18 @@ class _SignInScreenState extends State<SignInScreen> {
                 const SizedBox(height: 24),
                 _buildLabel('Password'),
                 const SizedBox(height: 8),
-                _buildTextField(
-                  controller: _passwordController,
-                  hint: '••••••••',
-                  icon: Icons.lock_outline_rounded,
-                  isPassword: true,
-                  obscureText: viewModel.obscurePassword,
-                  onToggleVisibility: viewModel.togglePasswordVisibility,
+                Obx(
+                  () => _buildTextField(
+                    controller: _passwordController,
+                    hint: '••••••••',
+                    icon: Icons.lock_outline_rounded,
+                    isPassword: true,
+                    obscureText: authController.obscurePassword,
+                    onToggleVisibility: authController.togglePasswordVisibility,
+                  ),
                 ),
                 const SizedBox(height: 32),
-                _buildSignInButton(viewModel),
+                _buildSignInButton(),
               ],
             ),
           ),
@@ -254,7 +256,9 @@ class _SignInScreenState extends State<SignInScreen> {
     );
   }
 
-  Widget _buildSignInButton(AuthViewModel viewModel) {
+  Widget _buildSignInButton() {
+    final authController = AuthController.to;
+
     return Container(
       width: double.infinity,
       height: 56,
@@ -271,69 +275,69 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         ],
       ),
-      child: ElevatedButton(
-        onPressed: viewModel.isLoading
-            ? null
-            : () async {
-                if (_formKey.currentState!.validate()) {
-                  final success = await viewModel.signIn(
-                    _usernameController.text,
-                    _passwordController.text,
-                  );
-                  if (mounted) {
-                    if (success) {
-                      ToastHelper.success(
-                        context,
-                        title: "Login Success",
-                        message: "Welcome back to Eron Dashboard",
-                      );
+      child: Obx(
+        () => ElevatedButton(
+          onPressed: authController.isLoading
+              ? null
+              : () async {
+                  if (_formKey.currentState!.validate()) {
+                    final success = await authController.signIn(
+                      _usernameController.text,
+                      _passwordController.text,
+                    );
+                    if (mounted) {
+                      if (success) {
+                        ToastHelper.success(
+                          context,
+                          title: "Login Success",
+                          message: "Welcome back to Eron Dashboard",
+                        );
 
-                      Future.delayed(const Duration(seconds: 1), () {
-                        if (mounted) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MainLayout(),
-                            ),
-                          );
-                        }
-                      });
-                    } else {
-                      ToastHelper.error(
-                        context,
-                        title: "Login Failed",
-                        message:
-                            viewModel.loginResponse?.message ??
-                            "Please check your email and password ${viewModel.loginResponse?.status}",
-                      );
+                        Future.delayed(const Duration(seconds: 1), () {
+                          // Navigate based on role
+                          if (authController.isAdmin) {
+                            Get.offAllNamed(AppRoutes.adminDashboard);
+                          } else {
+                            Get.offAllNamed(AppRoutes.unauthorized);
+                          }
+                        });
+                      } else {
+                        ToastHelper.error(
+                          context,
+                          title: "Login Failed",
+                          message:
+                              authController.loginResponse?.message ??
+                              "Please check your email and password",
+                        );
+                      }
                     }
                   }
-                }
-              },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+                },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
+          child: authController.isLoading
+              ? const SizedBox(
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                )
+              : Text(
+                  'Sign In',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
         ),
-        child: viewModel.isLoading
-            ? const SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.white,
-                  strokeWidth: 2,
-                ),
-              )
-            : Text(
-                'Sign In',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
       ),
     );
   }

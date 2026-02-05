@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/toast_helper.dart';
-import '../../view_models/auth_view_model.dart';
-import '../auth/sign_in_screen.dart';
+import '../../controllers/auth_controller.dart';
 
 class Sidebar extends StatelessWidget {
   final int selectedIndex;
@@ -29,9 +28,6 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final authViewModel = context.watch<AuthViewModel>();
-    final user = authViewModel.userData;
-
     return Container(
       width: 250,
       color: AppColors.sidebar,
@@ -74,110 +70,107 @@ class Sidebar extends StatelessWidget {
           ),
 
           // User Profile
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
-              border: const Border(top: BorderSide(color: AppColors.border)),
-            ),
-            child: Row(
-              children: [
-                // Profile Image with Glow/Border
-                Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: AppColors.primary.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(21),
-                    child: Image.network(
-                      user?.avatar ??
-                          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop",
-                      fit: BoxFit.cover,
-                      errorBuilder: (c, e, s) => Container(
-                        color: AppColors.surface,
-                        child: const Icon(Icons.person, color: Colors.white54),
+          Obx(() {
+            final user = AuthController.to.userData;
+            return Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.03),
+                border: const Border(top: BorderSide(color: AppColors.border)),
+              ),
+              child: Row(
+                children: [
+                  // Profile Image with Glow/Border
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: AppColors.primary.withOpacity(0.3),
+                        width: 1.5,
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // Name & Email
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        user?.name ?? "Super Admin",
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(21),
+                      child: Image.network(
+                        user?.avatar ??
+                            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=150&auto=format&fit=crop",
+                        fit: BoxFit.cover,
+                        errorBuilder: (c, e, s) => Container(
+                          color: AppColors.surface,
+                          child: const Icon(
+                            Icons.person,
+                            color: Colors.white54,
+                          ),
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        user?.email ?? "Admin@platform.com",
-                        style: GoogleFonts.inter(
-                          color: Colors.white54,
-                          fontSize: 11,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                // Logout Button
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () async {
-                      await authViewModel.logout();
-                      if (context.mounted) {
+                  const SizedBox(width: 12),
+                  // Name & Email
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          user?.name ?? "Super Admin",
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          user?.email ?? "Admin@platform.com",
+                          style: GoogleFonts.inter(
+                            color: Colors.white54,
+                            fontSize: 11,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Logout Button
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () async {
                         ToastHelper.success(
                           context,
                           title: "Logged Out",
                           message: "You have been logged out successfully",
                         );
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const SignInScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      }
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      child: Icon(
-                        Icons.logout_rounded,
-                        color: Colors.white.withOpacity(0.4),
-                        size: 18,
+                        await AuthController.to.logout();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          Icons.logout_rounded,
+                          color: Colors.white.withOpacity(0.4),
+                          size: 18,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
