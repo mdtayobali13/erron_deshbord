@@ -304,7 +304,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         title: "Login Failed",
                         message:
                             viewModel.loginResponse?.message ??
-                            "Please check your email and password",
+                            "Please check your email and password ${viewModel.loginResponse?.message}",
                       );
                     }
                   }
