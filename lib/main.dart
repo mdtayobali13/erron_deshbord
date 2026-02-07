@@ -7,7 +7,6 @@ import 'routes/app_pages.dart';
 import 'routes/app_routes.dart';
 import 'bindings/auth_binding.dart';
 
-// Import all view models for Provider
 import 'view_models/overview_view_model.dart';
 import 'view_models/live_monitor_view_model.dart';
 import 'view_models/moderation_view_model.dart';
@@ -27,7 +26,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Wrap GetMaterialApp with MultiProvider to support existing Provider-based ViewModels
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => OverviewViewModel()),
@@ -42,17 +40,9 @@ class MyApp extends StatelessWidget {
       child: GetMaterialApp(
         title: 'Eron Dashboard',
         debugShowCheckedModeBanner: false,
-
-        // Initial binding - initializes AuthController
         initialBinding: InitialBinding(),
-
-        // Initial route
         initialRoute: AppPages.initial,
-
-        // All pages with middleware
         getPages: AppPages.routes,
-
-        // Theme configuration
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
             seedColor: AppColors.primary,
@@ -72,7 +62,7 @@ class MyApp extends StatelessWidget {
         defaultTransition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 200),
 
-        // Unknown route handler
+
         unknownRoute: GetPage(
           name: '/not-found',
           page: () => const Scaffold(
