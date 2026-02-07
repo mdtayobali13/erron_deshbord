@@ -94,7 +94,7 @@ class AuthController extends GetxController {
     );
 
     final response = await NetworkCaller.postRequest(
-      "https://api.instalive.cloud/api/v1/auth/login",
+      AppUrls.login,
       body: requestModel.toJson(),
     );
 
