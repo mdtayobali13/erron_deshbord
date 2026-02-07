@@ -31,7 +31,6 @@ class _SignInScreenState extends State<SignInScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Gradient
           Container(
             decoration: const BoxDecoration(
               color: AppColors.background,
@@ -40,14 +39,12 @@ class _SignInScreenState extends State<SignInScreen> {
                 end: Alignment.bottomRight,
                 colors: [
                   AppColors.background,
-                  Color(0xFF1A1A2E), // Custom deep navy
+                  Color(0xFF1A1A2E), 
                   AppColors.background,
                 ],
               ),
             ),
           ),
-
-          // Animated Background Elements (Optional/Subtle)
           Positioned(
             top: -100,
             right: -100,
@@ -95,12 +92,12 @@ class _SignInScreenState extends State<SignInScreen> {
                     _buildHeader(),
                     const SizedBox(height: 48),
 
-                    // Login Card
+          
                     _buildLoginCard(),
 
                     const SizedBox(height: 48),
 
-                    // Powered by
+             
                     _buildPoweredBy(),
                   ],
                 ),

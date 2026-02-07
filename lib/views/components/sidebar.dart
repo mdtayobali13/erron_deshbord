@@ -80,7 +80,6 @@ class Sidebar extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Profile Image with Glow/Border
                   Container(
                     width: 42,
                     height: 42,
