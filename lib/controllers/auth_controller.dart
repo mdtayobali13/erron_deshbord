@@ -94,13 +94,11 @@ class AuthController extends GetxController {
     );
 
     final response = await NetworkCaller.postRequest(
-      AppUrls.login,
+      "https://api.instalive.cloud/api/v1/auth/login",
       body: requestModel.toJson(),
     );
 
     _isLoading.value = false;
-
-    print(response.responseData);
 
     if (response.responseData != null && response.responseData is Map) {
       _loginResponse.value = LoginResponseModel.fromJson(response.responseData);

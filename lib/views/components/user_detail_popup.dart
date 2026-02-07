@@ -530,10 +530,7 @@ class _UserDetailPopupState extends State<UserDetailPopup> {
 
     String finalUrl = urlRaw;
     if (!urlRaw.startsWith("http")) {
-      // Assuming relative path from API root or public folder
-      // Adjust this base URL if your images are hosted elsewhere or need /api prefix
-      // Based on previous code, it seemed to expect just base domain prepended
-      finalUrl = "https://erronliveapp.mtscorporate.com$urlRaw";
+      finalUrl = "https://api.instalive.cloud/api/v1$urlRaw";
     }
 
     return Image.network(
