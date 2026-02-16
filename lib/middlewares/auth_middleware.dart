@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
 import '../services/prefs_service.dart';
+import '../routes/app_routes.dart';
 
 /// Middleware to protect routes that require authentication
 class AuthMiddleware extends GetMiddleware {
@@ -14,7 +15,7 @@ class AuthMiddleware extends GetMiddleware {
 
     // If not logged in, redirect to signin
     if (!authController.isLoggedIn) {
-      return const RouteSettings(name: '/signin');
+      return RouteSettings(name: AppRoutes.signin);
     }
 
     return null; // Allow access
@@ -33,12 +34,12 @@ class AdminMiddleware extends GetMiddleware {
 
     // First check if logged in
     if (!authController.isLoggedIn) {
-      return const RouteSettings(name: '/signin');
+      return RouteSettings(name: AppRoutes.signin);
     }
 
     // Then check if user has admin role
     if (!authController.isAdmin) {
-      return const RouteSettings(name: '/unauthorized');
+      return RouteSettings(name: AppRoutes.unauthorized);
     }
 
     return null; // Allow access
@@ -57,9 +58,9 @@ class GuestMiddleware extends GetMiddleware {
     // If already logged in, redirect to dashboard
     if (authController.isLoggedIn) {
       if (authController.isAdmin) {
-        return const RouteSettings(name: '/admin-dashboard');
+        return RouteSettings(name: AppRoutes.adminDashboard);
       }
-      return const RouteSettings(name: '/unauthorized');
+      return RouteSettings(name: AppRoutes.unauthorized);
     }
 
     return null; // Allow access to guest routes
@@ -87,14 +88,14 @@ class AuthGuard {
     final isLoggedIn = await checkAuth();
 
     if (!isLoggedIn) {
-      return '/signin';
+      return AppRoutes.signin;
     }
 
     final isAdmin = await checkAdminRole();
     if (isAdmin) {
-      return '/admin-dashboard';
+      return AppRoutes.adminDashboard;
     }
 
-    return '/unauthorized';
+    return AppRoutes.unauthorized;
   }
 }

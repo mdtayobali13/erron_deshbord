@@ -4,6 +4,7 @@ import '../services/prefs_service.dart';
 import '../services/network_caller.dart';
 import '../utils/app_urls.dart';
 import '../models/login_response_model.dart';
+import '../routes/app_routes.dart';
 
 class UserRole {
   static const String superBoss = 'SUPERBOSS';
@@ -140,7 +141,7 @@ class AuthController extends GetxController {
     _userData.value = null;
     _isLoggedIn.value = false;
 
-    Get.offAllNamed('/signin');
+    Get.offAllNamed(AppRoutes.signin);
   }
 
   bool hasRole(List<String> requiredRoles) {
