@@ -4,6 +4,9 @@ FROM ghcr.io/cirruslabs/flutter:stable AS build
 # Set the working directory
 WORKDIR /app
 
+# Enable Flutter web support
+RUN flutter config --enable-web
+
 # Copy the pubspec and lock files first to cache dependencies
 COPY pubspec.yaml pubspec.lock ./
 
@@ -19,6 +22,9 @@ RUN flutter build web --release
 # Stage 2: Serve the application with Nginx
 FROM nginx:alpine
 
+# Remove default nginx config
+RUN rm -rf /etc/nginx/conf.d/default.conf
+
 # Copy the build artifacts from the build stage
 COPY --from=build /app/build/web /usr/share/nginx/html
 
@@ -28,8 +34,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Ensure permissions are correct
 RUN chmod -R 755 /usr/share/nginx/html
 
-# Expose port 8080
-EXPOSE 80
+# Expose port 8080 (must match Coolify port and nginx listen port)
+EXPOSE 8080
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]

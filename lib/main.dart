@@ -16,7 +16,7 @@ import 'view_models/appeals_view_model.dart';
 import 'view_models/finance_view_model.dart';
 import 'view_models/system_config_view_model.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
