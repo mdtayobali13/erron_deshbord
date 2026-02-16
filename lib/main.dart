@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,8 @@ import 'view_models/system_config_view_model.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Use path-based URL strategy (removes the # from URLs)
+  usePathUrlStrategy();
   runApp(const MyApp());
 }
 
@@ -38,7 +41,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SystemConfigViewModel()),
       ],
       child: GetMaterialApp(
-        title: 'Eron Dashboard',
+        title: 'Dashboard',
         debugShowCheckedModeBanner: false,
         initialBinding: InitialBinding(),
         initialRoute: AppPages.initial,
@@ -61,7 +64,6 @@ class MyApp extends StatelessWidget {
         // Default transition
         defaultTransition: Transition.fadeIn,
         transitionDuration: const Duration(milliseconds: 200),
-
 
         unknownRoute: GetPage(
           name: '/not-found',
