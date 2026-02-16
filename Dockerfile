@@ -16,8 +16,8 @@ RUN flutter pub get
 # Copy the rest of the application code
 COPY . .
 
-# Build the application for the web
-RUN flutter build web --release
+# Build the application for the web with base-href
+RUN flutter build web --release --base-href=/deshbord/
 
 # Stage 2: Serve the application with Nginx
 FROM nginx:alpine
@@ -25,8 +25,8 @@ FROM nginx:alpine
 # Remove default nginx config
 RUN rm -rf /etc/nginx/conf.d/default.conf
 
-# Copy the build artifacts from the build stage
-COPY --from=build /app/build/web /usr/share/nginx/html
+# Copy the build artifacts to the deshbord subdirectory
+COPY --from=build /app/build/web /usr/share/nginx/html/deshbord
 
 # Copy the custom Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
