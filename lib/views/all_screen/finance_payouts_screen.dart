@@ -21,9 +21,28 @@ class FinancePayoutsScreen extends StatelessWidget {
     );
   }
 
+  String _formatUsd(double value) {
+    if (value >= 1000000) {
+      return "\$${(value / 1000000).toStringAsFixed(1)}M";
+    } else if (value >= 1000) {
+      return "\$${(value / 1000).toStringAsFixed(1)}k";
+    } else {
+      return "\$${value.toStringAsFixed(2)}";
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = Provider.of<FinanceViewModel>(context);
+
+    final String totalTokenSales = _formatUsd(
+      viewModel.overview.totalTokenSalesUsd,
+    );
+    final String totalPayouts = _formatUsd(viewModel.overview.totalPayoutsUsd);
+    final String profitMargin = _formatUsd(viewModel.overview.profitMarginUsd);
+    final String pendingPayouts = _formatUsd(
+      viewModel.overview.pendingPayoutsUsd,
+    );
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(30),
@@ -47,7 +66,6 @@ class FinancePayoutsScreen extends StatelessWidget {
           const SizedBox(height: 30),
 
           // Summary Cards
-          // Summary Cards
           LayoutBuilder(
             builder: (context, constraints) {
               if (constraints.maxWidth < 700) {
@@ -55,14 +73,14 @@ class FinancePayoutsScreen extends StatelessWidget {
                 return Column(
                   children: [
                     _buildSummaryCard(
-                      "\$245.7k",
+                      totalTokenSales,
                       "Total Token Sales",
                       Icons.account_balance_wallet_outlined,
                       const Color(0xFF2563EB).withOpacity(0.1),
                     ),
                     const SizedBox(height: 16),
                     _buildSummaryCard(
-                      "\$156.4k",
+                      totalPayouts,
                       "Total Payouts",
                       Icons.arrow_upward,
                       const Color(0xFFEF4444).withOpacity(0.1),
@@ -70,14 +88,14 @@ class FinancePayoutsScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _buildSummaryCard(
-                      "\$245.7k",
+                      profitMargin,
                       "Profit Margin",
                       Icons.percent,
                       Colors.white.withOpacity(0.05),
                     ),
                     const SizedBox(height: 16),
                     _buildSummaryCard(
-                      "\$245.7k",
+                      pendingPayouts,
                       "Pending Payouts",
                       Icons.history,
                       Colors.white.withOpacity(0.05),
@@ -91,14 +109,14 @@ class FinancePayoutsScreen extends StatelessWidget {
                     Row(
                       children: [
                         _buildSummaryCard(
-                          "\$245.7k",
+                          totalTokenSales,
                           "Total Token Sales",
                           Icons.account_balance_wallet_outlined,
                           const Color(0xFF2563EB).withOpacity(0.1),
                         ),
                         const SizedBox(width: 20),
                         _buildSummaryCard(
-                          "\$156.4k",
+                          totalPayouts,
                           "Total Payouts",
                           Icons.arrow_upward,
                           const Color(0xFFEF4444).withOpacity(0.1),
@@ -110,14 +128,14 @@ class FinancePayoutsScreen extends StatelessWidget {
                     Row(
                       children: [
                         _buildSummaryCard(
-                          "\$245.7k",
+                          profitMargin,
                           "Profit Margin",
                           Icons.percent,
                           Colors.white.withOpacity(0.05),
                         ),
                         const SizedBox(width: 20),
                         _buildSummaryCard(
-                          "\$245.7k",
+                          pendingPayouts,
                           "Pending Payouts",
                           Icons.history,
                           Colors.white.withOpacity(0.05),
@@ -131,14 +149,14 @@ class FinancePayoutsScreen extends StatelessWidget {
                 return Row(
                   children: [
                     _buildSummaryCard(
-                      "\$245.7k",
+                      totalTokenSales,
                       "Total Token Sales",
                       Icons.account_balance_wallet_outlined,
                       const Color(0xFF2563EB).withOpacity(0.1),
                     ),
                     const SizedBox(width: 20),
                     _buildSummaryCard(
-                      "\$156.4k",
+                      totalPayouts,
                       "Total Payouts",
                       Icons.arrow_upward,
                       const Color(0xFFEF4444).withOpacity(0.1),
@@ -146,14 +164,14 @@ class FinancePayoutsScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 20),
                     _buildSummaryCard(
-                      "\$245.7k",
+                      profitMargin,
                       "Profit Margin",
                       Icons.percent,
                       Colors.white.withOpacity(0.05),
                     ),
                     const SizedBox(width: 20),
                     _buildSummaryCard(
-                      "\$245.7k",
+                      pendingPayouts,
                       "Pending Payouts",
                       Icons.history,
                       Colors.white.withOpacity(0.05),
@@ -175,7 +193,6 @@ class FinancePayoutsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Payout Table
           // Payout Table
           LayoutBuilder(
             builder: (context, constraints) {

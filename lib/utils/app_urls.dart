@@ -20,6 +20,7 @@ class AppUrls {
   static const String systemConfig = "$base/admin/config";
   static const String auditLogs = "$base/admin/audit-logs";
   static const String kycVerificationLocation = "$base/users/kyc-verifications";
+  static const String financeOverview = "$base/admin/stats/finance/overview";
   static const String payouts = "$base/finance/admin/payouts";
   static const String userStatsMonthly = "$base/admin/stats/users/monthly";
   static const String revenueTrend = "$base/admin/stats/finance/revenue-trend";

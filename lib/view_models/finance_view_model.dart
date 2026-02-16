@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../models/finance_overview_model.dart';
 import '../models/payout_model.dart';
 import '../services/network_caller.dart';
 import '../utils/app_urls.dart';
@@ -7,6 +8,11 @@ class FinanceViewModel extends ChangeNotifier {
   List<PayoutRequest> _requests = [];
   bool _isLoading = false;
   String? _errorMessage;
+
+  // Finance overview data
+  FinanceOverviewModel _overview = FinanceOverviewModel();
+
+  FinanceOverviewModel get overview => _overview;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -19,14 +25,30 @@ class FinanceViewModel extends ChangeNotifier {
   int get itemsPerPage => _itemsPerPage;
 
   FinanceViewModel() {
-    loadPayouts();
+    loadFinanceData();
   }
 
-  Future<void> loadPayouts() async {
+  Future<void> loadFinanceData() async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
+    // Load overview and payouts in parallel
+    await Future.wait([_loadOverview(), _loadPayouts()]);
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> _loadOverview() async {
+    final response = await NetworkCaller.getRequest(AppUrls.financeOverview);
+
+    if (response.isSuccess && response.responseData != null) {
+      _overview = FinanceOverviewModel.fromJson(response.responseData);
+    }
+  }
+
+  Future<void> _loadPayouts() async {
     final response = await NetworkCaller.getRequest(AppUrls.payouts);
 
     if (response.isSuccess) {
@@ -45,12 +67,7 @@ class FinanceViewModel extends ChangeNotifier {
         print("Error processing payouts data: $e");
         _errorMessage = "Failed to parse payouts data";
       }
-    } else {
-      _errorMessage = response.errorMessage ?? "Failed to load payouts";
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   List<PayoutRequest> get displayedRequests {
